@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/build",
+  "command": "/bin/c++     -std=c++17 -Wall -Wextra   -o CMakeFiles/RegularExpression.dir/NFA.cpp.o -c /home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/NFA.cpp",
+  "file": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/NFA.cpp"
+},
+{
+  "directory": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/build",
+  "command": "/bin/c++     -std=c++17 -Wall -Wextra   -o CMakeFiles/RegularExpression.dir/RegularExpression.cpp.o -c /home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/RegularExpression.cpp",
+  "file": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/RegularExpression.cpp"
+},
+{
+  "directory": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/build",
+  "command": "/bin/c++     -std=c++17 -Wall -Wextra   -o CMakeFiles/RegularExpression.dir/Test.cpp.o -c /home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/Test.cpp",
+  "file": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/Test.cpp"
+},
+{
+  "directory": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/build",
+  "command": "/bin/c++     -std=c++17 -Wall -Wextra   -o CMakeFiles/RegularExpression.dir/main.cpp.o -c /home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/main.cpp",
+  "file": "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/main.cpp"
+}
+]

@@ -1,0 +1,1 @@
+/bin/c++   -std=c++17 -Wall -Wextra -g  -rdynamic CMakeFiles/RegularExpression.dir/NFA.cpp.o CMakeFiles/RegularExpression.dir/RegularExpression.cpp.o CMakeFiles/RegularExpression.dir/Test.cpp.o CMakeFiles/RegularExpression.dir/main.cpp.o  -o RegularExpression 

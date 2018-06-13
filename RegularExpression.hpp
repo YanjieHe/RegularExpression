@@ -63,4 +63,13 @@ public:
 	wchar_t character;
 	SymbolExpression(wchar_t character);
 };
+
+RegularExpPtr operator|(RegularExpPtr x, RegularExpPtr y);
+RegularExpPtr operator>>(RegularExpPtr x, RegularExpPtr y);
+namespace RE
+{
+RegularExpPtr Symbol(wchar_t c);
+RegularExpPtr Literal(wstring text);
+RegularExpPtr Many(RegularExpPtr x);
+} // namespace RE
 #endif /* REGULAREXPRESSION_HPP */

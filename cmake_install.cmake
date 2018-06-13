@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/jasonhe/Documents/MyCode/CPP/JuCi++/RegularExpression/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

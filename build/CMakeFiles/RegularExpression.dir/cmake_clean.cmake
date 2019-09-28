@@ -1,8 +1,9 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/RegularExpression.dir/NFA.cpp.o"
-  "CMakeFiles/RegularExpression.dir/RegularExpression.cpp.o"
-  "CMakeFiles/RegularExpression.dir/Test.cpp.o"
   "CMakeFiles/RegularExpression.dir/main.cpp.o"
+  "CMakeFiles/RegularExpression.dir/src/sources/NFA.cpp.o"
+  "CMakeFiles/RegularExpression.dir/src/sources/NFAViewer.cpp.o"
+  "CMakeFiles/RegularExpression.dir/src/sources/RegularExpression.cpp.o"
+  "CMakeFiles/RegularExpression.dir/test/sources/Test.cpp.o"
   "RegularExpression.pdb"
   "RegularExpression"
 )

@@ -1,3 +1,0 @@
-/home/heyanjie/Documents/Projects/RegularExpression/build/CMakeFiles/rebuild_cache.dir
-/home/heyanjie/Documents/Projects/RegularExpression/build/CMakeFiles/RegularExpression.dir
-/home/heyanjie/Documents/Projects/RegularExpression/build/CMakeFiles/edit_cache.dir

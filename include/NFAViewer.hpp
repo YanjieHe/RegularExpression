@@ -3,14 +3,14 @@
 
 #include "NFA.hpp"
 
-namespace regex {
-class NFAViewer {
+namespace regex
+{
+class NFAViewer
+{
 public:
 	static void ViewNFA(const NFA& nfa);
 };
 
 } // namespace regex
-
-
 
 #endif // NFA_VIEWER_HPP

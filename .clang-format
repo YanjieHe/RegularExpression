@@ -10,7 +10,7 @@ AlignTrailingComments: true
 AlignOperands: true
 SpacesInSquareBrackets: false
 SpacesInParentheses : false
-AlignConsecutiveDeclarations: false
+# AlignConsecutiveDeclarations: false
 AlignConsecutiveAssignments: false
 SpaceBeforeAssignmentOperators: true
 SpacesInContainerLiterals: true

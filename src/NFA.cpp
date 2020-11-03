@@ -323,7 +323,7 @@ void NFA::EpsilonClosure()
 		std::sort(index.begin(), index.end());
 		registered[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
-		vector<unordered_set<int32_t>> nextStates(
+		vector<vector<int32_t>> nextStates(
 			static_cast<int>(intervalMap.size()) - 1);
 
 		for (auto[patternID, nextStatesSet] : nextStatesMap)
@@ -334,20 +334,18 @@ void NFA::EpsilonClosure()
 				cout << item << " ";
 			}
 			cout << endl;
-			nextStates[patternID] = nextStatesSet;
+			nextStates[patternID] =
+				vector<int32_t>(nextStatesSet.begin(), nextStatesSet.end());
+			std::sort(nextStates[patternID].begin(),
+					  nextStates[patternID].end());
 			cout << "!!!" << endl;
 		}
 		rows.push_back(DFATableRow(index, nextStates));
 		for (auto state : nextStates)
 		{
-			vector<int32_t> orderedState(state.begin(), state.end());
-			std::sort(orderedState.begin(), orderedState.end());
-			if (registered.count(orderedState))
+			if (registered.count(state) == 0)
 			{
-			}
-			else
-			{
-				registered[orderedState] = false;
+				registered[state] = false;
 			}
 		}
 		allVisited = true;
@@ -392,116 +390,4 @@ void NFA::EpsilonClosure()
 		viewRow(row);
 	}
 }
-// void NFA::EliminateEpsilonEdges() {
-// 	// TO DO
-// 	vector<bool> visited(G.NodeCount(), false);
-// 	vector<unordered_map<int, unordered_set<int>>> table;
-// 	for(int node = 0; node < G.NodeCount(); node++) {
-// 		unordered_set<int> nodeSet;
-// 		for(const NFAEdge& edge : G.Adj(node)) {
-// 			if(edge.pattern == NFAEdge::EPSILON) {
-// 				std::fill(visited.begin(), visited.end(), false);
-// 			} else {
-// 			}
-// 		}
-// 	}
-// 	std::fill(visited.begin(), visited.end(), false);
-// }
-
-// void NFA::Search(vector<bool>& visited, unordered_set<int>& nodeSet, int
-// start, int pattern) {
-// 	for(const NFAEdge& edge : G.Adj(start)) {
-// 		if(not visited[edge.To()]) {
-// 			visited[edge.To()] = true;
-// 			if (pattern == edge.Pattern()) {
-// 				if(pattern == NFAEdge::EPSILON) {
-// 					nodeSet.insert(edge.To());
-// 					Search(visited, nodeSet, edge.To(), pattern);
-// 				} else {
-// 					nodeSet.insert(edge.To());
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// NFAGraph EliminateEpsilonEdges(const NFAGraph& input)
-// {
-// 	vector<bool> visited(input.NodeCount());
-// 	for (int i = 0, n = visited.size(); i < n; i++)
-// 	{
-// 		visited[i] = false;
-// 	}
-// 	NFAGraph output;
-// 	output.start = input.start;
-// 	CollectValidEdges(input, output, input.start, input.start, visited);
-// 	return output;
-// }
-// void CollectValidEdges(NFAGraph& input, NFAGraph& output, int from, int node,
-// 					   vector<bool>& visited)
-// {
-// 	if (visited.at(node))
-// 	{
-// 		return;
-// 	}
-// 	else
-// 	{
-// 		visited.at(node) = true;
-// 		auto edges = input.adj.at(node);
-// 		for (auto& edge : edges)
-// 		{
-// 			if (edge.IsEpsilon())
-// 			{
-// 				CollectValidEdges(input, output, from, edge.to, visited);
-// 			}
-// 			else
-// 			{
-// 				output.AddEdge(NFAEdge(from, edge.to, edge.pattern));
-// 				CollectValidEdges(input, output, edge.to, edge.to, visited);
-// 			}
-// 		}
-// 	}
-// }
-// NFAGraph RenumberGraph(NFAGraph& input)
-// {
-// 	unordered_map<int, int> map;
-// 	vector<bool> visited(input.NodeCount());
-// 	for (int i = 0, n = visited.size(); i < n; i++)
-// 	{
-// 		visited.at(i) = false;
-// 	}
-// 	RenumberSubgraph(input, input.start, visited, map);
-// 	auto inputEdges = input.GetEdges();
-// 	NFAGraph output;
-// 	output.start = map[input.start];
-// 	for (auto& edge : inputEdges)
-// 	{
-// 		output.AddEdge(NFAEdge(map[edge.from], map[edge.to], edge.pattern));
-// 	}
-// 	return output;
-// }
-// void RenumberSubgraph(NFAGraph& input, int node, vector<bool>& visited,
-// 					  unordered_map<int, int>& map)
-// {
-// 	if (visited.at(node))
-// 	{
-// 		return;
-// 	}
-// 	else
-// 	{
-// 		visited.at(node) = true;
-// 		bool found = map.find(node) != map.end();
-// 		if (!found)
-// 		{
-// 			int n = map.size();
-// 			map.insert({node, n});
-// 		}
-// 		auto edges = input.adj.at(node);
-// 		for (auto& edge : edges)
-// 		{
-// 			RenumberSubgraph(input, edge.to, visited, map);
-// 		}
-// 	}
-// }
-
 } // namespace regex

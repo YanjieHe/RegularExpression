@@ -89,10 +89,10 @@ class DFATableRow
 {
 public:
 	vector<int32_t> index;
-	vector<unordered_set<int32_t>> nextStates;
+	vector<vector<int32_t>> nextStates;
 	DFATableRow() = default;
 	DFATableRow(vector<int32_t> index,
-				vector<unordered_set<int32_t>> nextStates)
+				vector<vector<int32_t>> nextStates)
 		: index{index}
 		, nextStates{nextStates}
 	{
@@ -129,14 +129,6 @@ public:
 				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
 	void EpsilonClosure();
 };
-
-// NFAGraph EliminateEpsilonEdges(const NFAGraph& input);
-
-// void CollectValidEdges(NFAGraph& input, NFAGraph& output, int from, int node,
-// 					   vector<bool>& visited);
-// NFAGraph RenumberGraph(NFAGraph& input);
-// void RenumberSubgraph(NFAGraph& input, int node, vector<bool>& visited,
-// 					  unordered_map<int, int>& map);
 
 } // namespace regex
 #endif // NFA_HPP

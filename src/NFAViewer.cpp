@@ -1,5 +1,6 @@
 #include "NFAViewer.hpp"
 #include <iostream>
+#include "Encoding.hpp"
 
 namespace regex
 {
@@ -24,6 +25,11 @@ void NFAViewer::ViewNFA(const NFA& nfa)
 	cout << "node [shape = point ]; start;" << endl;
 	cout << "node [shape = circle];" << endl;
 	cout << "start -> " << G.start << ";" << endl;
+	unordered_map<int32_t, Interval> converter;
+	for (auto[interval, patternID] : nfa.intervalMap)
+	{
+		converter[patternID] = interval;
+	}
 	for (const auto& edge : edges)
 	{
 		cout << edge.from << " -> " << edge.to;
@@ -33,8 +39,10 @@ void NFAViewer::ViewNFA(const NFA& nfa)
 		}
 		else
 		{
-			cout << "[label=\"" << static_cast<char>(edge.pattern) << "\"];"
-				 << endl;
+			auto interval = converter[edge.pattern];
+			cout << "[label=\"" << UTF32ToUTF8(u32string(
+									   {static_cast<char32_t>(interval.lower)}))
+				 << "\"];" << endl;
 		}
 	}
 	cout << "}" << endl;

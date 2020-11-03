@@ -20,10 +20,11 @@ int main()
 	auto exp = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 	regex::NFA nfa{exp};
 	regex::NFAViewer::ViewNFA(nfa);
+	nfa.EpsilonClosure();
 
-	auto exp2 = regex::Literal(U"0123456789");
-	regex::NFA nfa2{exp2};
-	regex::NFAViewer::ViewNFA(nfa2);
+	// auto exp2 = regex::Literal(U"0123456789");
+	// regex::NFA nfa2{exp2};
+	// regex::NFAViewer::ViewNFA(nfa2);
 
 	return 0;
 }

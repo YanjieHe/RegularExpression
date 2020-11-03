@@ -118,11 +118,14 @@ private:
 public:
 	int32_t RecordInterval(char32_t lower, char32_t upper);
 
-	void Search(int node, int pattern,
+	void Search(int start, int node, int pattern,
 				vector<unordered_map<int32_t, unordered_set<int>>>& table,
 				vector<bool>& visited);
 	unordered_map<int32_t, unordered_set<int>>
 		ComputeRow(int node,
+				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
+	unordered_map<int32_t, unordered_set<int>>
+		ComputeRowOfNodes(vector<int> nodes,
 				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
 	void EpsilonClosure();
 };

@@ -68,6 +68,7 @@ public:
 		, upper{upper}
 	{
 	}
+	u32string ToString() const;
 };
 
 inline bool operator==(const Interval& x, const Interval& y)
@@ -91,17 +92,29 @@ public:
 	vector<int32_t> index;
 	vector<vector<int32_t>> nextStates;
 	DFATableRow() = default;
-	DFATableRow(vector<int32_t> index,
-				vector<vector<int32_t>> nextStates)
+	DFATableRow(vector<int32_t> index, vector<vector<int32_t>> nextStates)
 		: index{index}
 		, nextStates{nextStates}
 	{
 	}
 };
 
+struct Int32VectorHash
+{
+	size_t operator()(const vector<int32_t>& V) const
+	{
+		size_t hash = V.size();
+		for (auto& i : V)
+		{
+			hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		}
+		return hash;
+	}
+};
 class NFA
 {
 public:
+	const int EPSILON = -1;
 	unordered_map<Interval, int32_t, IntervalHash> intervalMap;
 	NFAGraph G;
 
@@ -124,11 +137,13 @@ public:
 	unordered_map<int32_t, unordered_set<int>>
 		ComputeRow(int node,
 				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
-	unordered_map<int32_t, unordered_set<int>>
-		ComputeRowOfNodes(vector<int> nodes,
-				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
+	unordered_map<int32_t, unordered_set<int>> ComputeRowOfNodes(
+		vector<int> nodes,
+		vector<unordered_map<int32_t, unordered_set<int>>>& table);
 	void EpsilonClosure();
 };
 
+unordered_map<int32_t, Interval> GetPatternIDIntervalMap(
+	const unordered_map<Interval, int32_t, IntervalHash>& intervalMap);
 } // namespace regex
 #endif // NFA_HPP

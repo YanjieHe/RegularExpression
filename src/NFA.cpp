@@ -73,9 +73,25 @@ NFASubgraph::NFASubgraph(int start, int end)
 	, end{end}
 {
 }
+u32string Interval::ToString() const
+{
+	if (lower == -1 && upper == -1)
+	{
+		return U"ε";
+	}
+	else if (lower == upper)
+	{
+		return u32string({static_cast<char32_t>(lower)});
+	}
+	else
+	{
+		return u32string(U"[") + static_cast<char32_t>(lower) + U" - " +
+			   static_cast<char32_t>(upper) + U"]";
+	}
+}
 NFA::NFA(const RegularExpression::Ptr& exp)
 {
-	intervalMap[Interval(-1, -1)] = -1;
+	intervalMap[Interval(EPSILON, EPSILON)] = EPSILON;
 	CreateGraph(exp);
 }
 void NFA::CreateGraph(const RegularExpression::Ptr& exp)
@@ -157,7 +173,7 @@ int32_t NFA::RecordInterval(char32_t lower, char32_t upper)
 	else
 	{
 		int n = intervalMap.size();
-		intervalMap[interval] = n - 1;
+		intervalMap[interval] = n - 1; // minus epsilon
 		return n - 1;
 	}
 }
@@ -166,7 +182,6 @@ void NFA::Search(int start, int node, int pattern,
 				 vector<unordered_map<int32_t, unordered_set<int>>>& table,
 				 vector<bool>& visited)
 {
-	const int EPSILON = -1;
 	if (visited.at(node))
 	{
 		return;
@@ -201,22 +216,15 @@ unordered_map<int32_t, unordered_set<int>>
 	NFA::ComputeRow(int node,
 					vector<unordered_map<int32_t, unordered_set<int>>>& table)
 {
-	const int EPSILON = -1;
 	auto epsilonNextStates = table[node][EPSILON];
 	unordered_map<int32_t, unordered_set<int>> nextStatesMap;
 	for (auto[patternID, nextStates] : table[node])
 	{
 		if (patternID != EPSILON)
 		{
-			std::cout << "pattern ID ----> " << patternID << std::endl;
 			nextStatesMap[patternID] = nextStates;
-			for (auto state : nextStates)
-			{
-				std::cout << "next state: " << state << std::endl;
-			}
 			for (auto nextState : epsilonNextStates)
 			{
-				std::cout << "next eps: " << nextState << std::endl;
 				nextStatesMap[patternID].insert(nextState);
 			}
 		}
@@ -248,25 +256,16 @@ void NFA::EpsilonClosure()
 	const int EPSILON = -1;
 	int N = G.NodeCount();
 	vector<unordered_map<int32_t, unordered_set<int>>> table(N);
-	for (int i = 0; i < N; i++)
+	for (int node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);
-		Search(i, i, EPSILON, table, visited);
+		Search(node, node, EPSILON, table, visited);
 	}
 	using namespace std;
-	for (auto[interval, patternID] : intervalMap)
+	auto patternIDToInterval = GetPatternIDIntervalMap(intervalMap);
+	for (auto[patternID, interval] : patternIDToInterval)
 	{
-		if (interval.lower != -1)
-		{
-			cout << "[" << static_cast<char>(interval.lower) << ", "
-				 << static_cast<char>(interval.upper) << "] : " << patternID
-				 << endl;
-		}
-		else
-		{
-			cout << "[" << interval.lower << ", " << interval.upper
-				 << "] : " << patternID << endl;
-		}
+		cout << UTF32ToUTF8(interval.ToString()) << " : " << patternID << endl;
 	}
 	unordered_map<int32_t, Interval> converter;
 	for (auto[interval, patternID] : intervalMap)
@@ -285,9 +284,7 @@ void NFA::EpsilonClosure()
 			else
 			{
 				auto interval = converter[patternID];
-				cout << "pattern ID = "
-					 << UTF32ToUTF8(
-							u32string({static_cast<char32_t>(interval.lower)}))
+				cout << "pattern ID = " << UTF32ToUTF8(interval.ToString())
 					 << " : {";
 			}
 			for (int item : set)
@@ -300,28 +297,15 @@ void NFA::EpsilonClosure()
 	int start = G.start;
 	vector<DFATableRow> rows;
 
-	struct VectorHasher
-	{
-		size_t operator()(const vector<int32_t>& V) const
-		{
-			size_t hash = V.size();
-			for (auto& i : V)
-			{
-				hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-			}
-			return hash;
-		}
-	};
-
 	cout << "intervalMap.size() = " << intervalMap.size() << endl;
 
-	unordered_map<vector<int32_t>, bool, VectorHasher> registered;
+	unordered_map<vector<int32_t>, bool, Int32VectorHash> registeredStates;
 	vector<int32_t> index = {start};
 	bool allVisited = false;
 	while (!allVisited)
 	{
 		std::sort(index.begin(), index.end());
-		registered[index] = true;
+		registeredStates[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
 		vector<vector<int32_t>> nextStates(
 			static_cast<int>(intervalMap.size()) - 1);
@@ -343,13 +327,13 @@ void NFA::EpsilonClosure()
 		rows.push_back(DFATableRow(index, nextStates));
 		for (auto state : nextStates)
 		{
-			if (registered.count(state) == 0)
+			if (registeredStates.count(state) == 0)
 			{
-				registered[state] = false;
+				registeredStates[state] = false;
 			}
 		}
 		allVisited = true;
-		for (auto[nextState, isVisited] : registered)
+		for (auto[nextState, isVisited] : registeredStates)
 		{
 			if (isVisited == false)
 			{
@@ -389,5 +373,15 @@ void NFA::EpsilonClosure()
 	{
 		viewRow(row);
 	}
+}
+unordered_map<int32_t, Interval> GetPatternIDIntervalMap(
+	const unordered_map<Interval, int32_t, IntervalHash>& intervalMap)
+{
+	unordered_map<int32_t, Interval> result;
+	for (auto[interval, patternID] : intervalMap)
+	{
+		result[patternID] = interval;
+	}
+	return result;
 }
 } // namespace regex

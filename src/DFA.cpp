@@ -58,7 +58,7 @@ DFAGraph DFATableToDFAGraph(
 			if (IsEndState(nextStates))
 			{
 				int id = RecordState(statesID, row.index);
-				graph.endStates.push_back(id);
+				graph.endStates.insert(id);
 			}
 			else
 			{
@@ -103,5 +103,102 @@ int32_t RecordState(
 		stateMap[state] = n;
 		return n;
 	}
+}
+bool DFAMatrix::Match(const u32string& str) const
+{
+	if (matrix.size() > 0)
+	{
+		int state = 0;
+		for (size_t i = 0; i < str.size(); i++)
+		{
+			char32_t c = str[i];
+			bool matched = false;
+			if (endStates.count(state))
+			{
+				return false;
+			}
+			for (size_t j = 0; j < matrix.at(0).size(); j++)
+			{
+				if (matrix.at(state).at(j) != -1)
+				{
+					const Interval& interval = patterns.at(j);
+					if (static_cast<char32_t>(interval.lower) <= c &&
+						c <= static_cast<char32_t>(interval.upper))
+					{
+						state =
+							matrix.at(state).at(j); // move to the next state
+						matched = true;
+						break;
+					}
+				}
+			}
+			if (!matched)
+			{
+				return false;
+			}
+		}
+		return endStates.count(state);
+	}
+	else
+	{
+		return str.size();
+	}
+}
+int DFAMatrix::Find(const u32string& str) const
+{
+	if (matrix.size() > 0)
+	{
+		int state = 0;
+		for (size_t i = 0; i < str.size(); i++)
+		{
+			char32_t c = str[i];
+			bool matched = false;
+			if (endStates.count(state))
+			{
+				return i;
+			}
+			for (size_t j = 0; j < matrix.at(0).size(); j++)
+			{
+				if (matrix.at(state).at(j) != -1)
+				{
+					const Interval& interval = patterns.at(j);
+					if (static_cast<char32_t>(interval.lower) <= c &&
+						c <= static_cast<char32_t>(interval.upper))
+					{
+						state =
+							matrix.at(state).at(j); // move to the next state
+						matched = true;
+						break;
+					}
+				}
+			}
+			if (!matched)
+			{
+				return false;
+			}
+		}
+		return endStates.count(state);
+	}
+	else
+	{
+		return 0;
+	}
+}
+DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph)
+{
+	DFAMatrix matrix;
+	matrix.matrix = vector<vector<int>>(
+		dfaGraph.dfa.NodeCount(),
+		vector<int>(dfaGraph.patternIDToIntervals.size(), -1));
+	matrix.patterns = dfaGraph.patternIDToIntervals;
+	matrix.endStates = dfaGraph.endStates;
+	for (auto edges : dfaGraph.dfa.adj)
+	{
+		for (auto edge : edges)
+		{
+			matrix.matrix.at(edge.from).at(edge.pattern) = edge.to;
+		}
+	}
+	return matrix;
 }
 } // namespace regex

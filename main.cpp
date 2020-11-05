@@ -24,6 +24,11 @@ int main()
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph = regex::DFATableToDFAGraph(
 		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap));
+	cout << "# of nodes = " << dfaGraph.dfa.NodeCount() << endl;
+	for (auto endState : dfaGraph.endStates)
+	{
+		cout << "end state: " << endState << endl;
+	}
 	for (auto edges : dfaGraph.dfa.adj)
 	{
 		for (auto edge : edges)
@@ -34,6 +39,13 @@ int main()
 				 << endl;
 		}
 	}
+	auto dfaMatrix = CreateDFAMatrix(dfaGraph);
+
+	cout << std::boolalpha << dfaMatrix.Match(U"ab") << endl;
+	cout << std::boolalpha << dfaMatrix.Match(U"aa") << endl;
+	cout << std::boolalpha << dfaMatrix.Match(U"aba") << endl;
+	cout << std::boolalpha << dfaMatrix.Match(U"bab") << endl;
+	cout << std::boolalpha << dfaMatrix.Match(U"ba") << endl;
 
 	// auto exp2 = regex::Literal(U"0123456789");
 	// regex::NFA nfa2{exp2};

@@ -3,12 +3,14 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace regex
 {
 using std::vector;
 using std::u32string;
 using std::unordered_map;
+using std::unordered_set;
 
 class DFAEdge
 {
@@ -55,8 +57,8 @@ class DFAGraph
 {
 public:
 	DFA dfa;
-    vector<int32_t> endStates;
-    vector<Interval> patternIDToIntervals;
+	unordered_set<int32_t> endStates;
+	vector<Interval> patternIDToIntervals;
 };
 
 class DFATableRow
@@ -99,10 +101,25 @@ struct Int32VectorHash
 		return hash;
 	}
 };
+
+class DFAMatrix
+{
+public:
+	vector<vector<int>> matrix;
+	vector<Interval> patterns;
+    unordered_set<int> endStates;
+	bool Match(const u32string& str) const;
+    int Find(const u32string& str) const;
+};
+
 DFAGraph DFATableToDFAGraph(
 	const vector<DFATableRow>& rows,
 	const unordered_map<int32_t, Interval>& patternIDToInterval);
 bool IsEndState(const vector<vector<int32_t>>& nextStates);
-int32_t RecordState(unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap, const vector<int32_t>& state);
+int32_t RecordState(
+	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
+	const vector<int32_t>& state);
+
+DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph);
 } // namespace regex
 #endif // DFA_HPP

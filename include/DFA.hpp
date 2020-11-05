@@ -107,9 +107,10 @@ class DFAMatrix
 public:
 	vector<vector<int>> matrix;
 	vector<Interval> patterns;
-    unordered_set<int> endStates;
+	unordered_set<int> endStates;
 	bool Match(const u32string& str) const;
-    int Find(const u32string& str) const;
+	int Find(const u32string& str) const;
+	int MatchFromBeginning(const u32string& str) const;
 };
 
 DFAGraph DFATableToDFAGraph(

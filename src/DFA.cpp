@@ -1,4 +1,5 @@
 #include "DFA.hpp"
+#include <iostream>
 
 namespace regex
 {
@@ -141,10 +142,31 @@ bool DFAMatrix::Match(const u32string& str) const
 	}
 	else
 	{
-		return str.size();
+		return str.size() == 0;
 	}
 }
+
 int DFAMatrix::Find(const u32string& str) const
+{
+	if (matrix.size() > 0)
+	{
+		for (size_t start = 0; start < str.size(); start++)
+		{
+			int length = MatchFromBeginning(str.substr(start));
+			if (length != -1)
+			{
+				return start;
+			}
+		}
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int DFAMatrix::MatchFromBeginning(const u32string& str) const
 {
 	if (matrix.size() > 0)
 	{
@@ -174,14 +196,21 @@ int DFAMatrix::Find(const u32string& str) const
 			}
 			if (!matched)
 			{
-				return false;
+				return -1;
 			}
 		}
-		return endStates.count(state);
+		if (endStates.count(state))
+		{
+			return str.size();
+		}
+		else
+		{
+			return -1;
+		}
 	}
 	else
 	{
-		return 0;
+		return str.size();
 	}
 }
 DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph)

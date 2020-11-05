@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include "DFA.hpp"
 
 namespace regex
 {
@@ -26,12 +27,14 @@ enum class RegularExpressionKind
 	Symbol
 };
 
-class RegularExpression
+class RegularExpression : public std::enable_shared_from_this<RegularExpression>
 {
 public:
 	typedef shared_ptr<RegularExpression> Ptr;
 
 	virtual RegularExpressionKind Kind() const = 0;
+
+	DFAMatrix Compile();
 };
 
 class AlternationExpression : public RegularExpression

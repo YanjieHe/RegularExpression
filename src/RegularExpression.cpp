@@ -1,8 +1,19 @@
 #include "RegularExpression.hpp"
+#include "NFA.hpp"
 
 namespace regex
 {
 using std::make_shared;
+
+DFAMatrix RegularExpression::Compile()
+{
+	shared_ptr<RegularExpression> exp = shared_from_this();
+	NFA nfa{exp};
+	auto dfaTable = nfa.EpsilonClosure();
+	auto dfaGraph = regex::DFATableToDFAGraph(
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap));
+	return CreateDFAMatrix(dfaGraph);
+}
 
 AlternationExpression::AlternationExpression(
 	const RegularExpression::Ptr& left, const RegularExpression::Ptr& right)

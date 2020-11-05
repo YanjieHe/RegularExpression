@@ -1,6 +1,7 @@
 #include "RegularExpression.hpp"
 #include "NFA.hpp"
 #include "NFAViewer.hpp"
+#include "Encoding.hpp"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -20,7 +21,19 @@ int main()
 	auto exp = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 	regex::NFA nfa{exp};
 	regex::NFAViewer::ViewNFA(nfa);
-	nfa.EpsilonClosure();
+	auto dfaTable = nfa.EpsilonClosure();
+	auto dfaGraph = regex::DFATableToDFAGraph(
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap));
+	for (auto edges : dfaGraph.dfa.adj)
+	{
+		for (auto edge : edges)
+		{
+			cout << edge.from << " -> " << edge.to << " : "
+				 << UTF32ToUTF8(dfaGraph.patternIDToIntervals.at(edge.pattern)
+									.ToString())
+				 << endl;
+		}
+	}
 
 	// auto exp2 = regex::Literal(U"0123456789");
 	// regex::NFA nfa2{exp2};

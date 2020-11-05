@@ -7,6 +7,7 @@
 #include "Encoding.hpp"
 #include "NFA.hpp"
 #include <stack>
+#include "DFA.hpp"
 
 namespace regex
 {
@@ -73,22 +74,7 @@ NFASubgraph::NFASubgraph(int start, int end)
 	, end{end}
 {
 }
-u32string Interval::ToString() const
-{
-	if (lower == -1 && upper == -1)
-	{
-		return U"ε";
-	}
-	else if (lower == upper)
-	{
-		return u32string({static_cast<char32_t>(lower)});
-	}
-	else
-	{
-		return u32string(U"[") + static_cast<char32_t>(lower) + U" - " +
-			   static_cast<char32_t>(upper) + U"]";
-	}
-}
+
 NFA::NFA(const RegularExpression::Ptr& exp)
 {
 	intervalMap[Interval(EPSILON, EPSILON)] = EPSILON;
@@ -223,6 +209,7 @@ unordered_map<int32_t, unordered_set<int>>
 		if (patternID != EPSILON)
 		{
 			nextStatesMap[patternID] = nextStates;
+			// a -> aε*
 			for (auto nextState : epsilonNextStates)
 			{
 				nextStatesMap[patternID].insert(nextState);
@@ -251,7 +238,7 @@ unordered_map<int32_t, unordered_set<int>> NFA::ComputeRowOfNodes(
 	return nodeStates;
 }
 
-void NFA::EpsilonClosure()
+vector<DFATableRow> NFA::EpsilonClosure()
 {
 	const int EPSILON = -1;
 	int N = G.NodeCount();
@@ -272,21 +259,14 @@ void NFA::EpsilonClosure()
 	{
 		converter[patternID] = interval;
 	}
-	for (int i = 0; i < N; i++)
+	for (int node = 0; node < N; node++)
 	{
-		cout << "i = " << i << endl;
-		for (auto[patternID, set] : table.at(i))
+		cout << "node = " << node << endl;
+		for (auto[patternID, set] : table.at(node))
 		{
-			if (patternID == -1)
-			{
-				cout << "pattern ID = " << patternID << " : {";
-			}
-			else
-			{
-				auto interval = converter[patternID];
-				cout << "pattern ID = " << UTF32ToUTF8(interval.ToString())
-					 << " : {";
-			}
+			auto interval = converter[patternID];
+			cout << "pattern ID = " << UTF32ToUTF8(interval.ToString())
+				 << " : {";
 			for (int item : set)
 			{
 				cout << " " << item;
@@ -373,7 +353,9 @@ void NFA::EpsilonClosure()
 	{
 		viewRow(row);
 	}
+	return rows;
 }
+
 unordered_map<int32_t, Interval> GetPatternIDIntervalMap(
 	const unordered_map<Interval, int32_t, IntervalHash>& intervalMap)
 {

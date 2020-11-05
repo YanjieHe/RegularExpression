@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include "RegularExpression.hpp"
 #include <cstdint>
+#include "DFA.hpp"
 
 namespace regex
 {
@@ -57,60 +58,6 @@ public:
 	NFASubgraph(int start, int end);
 };
 
-class Interval
-{
-public:
-	int32_t lower;
-	int32_t upper;
-	Interval() = default;
-	Interval(int32_t lower, int32_t upper)
-		: lower{lower}
-		, upper{upper}
-	{
-	}
-	u32string ToString() const;
-};
-
-inline bool operator==(const Interval& x, const Interval& y)
-{
-	return x.lower == y.lower && x.upper && y.upper;
-}
-
-struct IntervalHash
-{
-	size_t operator()(const Interval& interval) const noexcept
-	{
-		size_t h1 = static_cast<size_t>(interval.lower);
-		size_t h2 = static_cast<size_t>(interval.upper);
-		return h1 ^ (h2 << 1);
-	}
-};
-
-class DFATableRow
-{
-public:
-	vector<int32_t> index;
-	vector<vector<int32_t>> nextStates;
-	DFATableRow() = default;
-	DFATableRow(vector<int32_t> index, vector<vector<int32_t>> nextStates)
-		: index{index}
-		, nextStates{nextStates}
-	{
-	}
-};
-
-struct Int32VectorHash
-{
-	size_t operator()(const vector<int32_t>& V) const
-	{
-		size_t hash = V.size();
-		for (auto& i : V)
-		{
-			hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-		}
-		return hash;
-	}
-};
 class NFA
 {
 public:
@@ -140,7 +87,7 @@ public:
 	unordered_map<int32_t, unordered_set<int>> ComputeRowOfNodes(
 		vector<int> nodes,
 		vector<unordered_map<int32_t, unordered_set<int>>>& table);
-	void EpsilonClosure();
+	vector<DFATableRow> EpsilonClosure();
 };
 
 unordered_map<int32_t, Interval> GetPatternIDIntervalMap(

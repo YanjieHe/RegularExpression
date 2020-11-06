@@ -7,15 +7,6 @@ using std::cout;
 using std::endl;
 using regex::Symbol;
 
-// regex::u32string operator "" _w(const char* str, size_t n) {
-// 	regex::u32string res;
-// 	res.reserve(n);
-// 	for (size_t i = 0; i < n; i++) {
-// 		res.push_back(str[i]);
-// 	}
-// 	return res;
-// }
-
 void TestMatch(const regex::DFAMatrix& dfa, std::u32string text, bool expected)
 {
 	auto actual = dfa.Match(text);

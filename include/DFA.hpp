@@ -91,12 +91,12 @@ struct IntervalHash
 
 struct Int32VectorHash
 {
-	size_t operator()(const vector<int32_t>& V) const
+	size_t operator()(const vector<int32_t>& ints) const
 	{
-		size_t hash = V.size();
-		for (auto& i : V)
+		size_t hash = ints.size();
+		for (auto& i : ints)
 		{
-			hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+			hash = hash ^ (i + 0x9e3779b9 + (hash << 6) + (hash >> 2));
 		}
 		return hash;
 	}
@@ -110,13 +110,15 @@ public:
 	unordered_set<int> endStates;
 	bool Match(const u32string& str) const;
 	int Find(const u32string& str) const;
-	int MatchFromBeginning(const u32string& str) const;
+	int MatchFromBeginning(const u32string& str, size_t startIndex,
+						   bool greedyMode) const;
 };
 
 DFAGraph DFATableToDFAGraph(
 	const vector<DFATableRow>& rows,
-	const unordered_map<int32_t, Interval>& patternIDToInterval);
-bool IsEndState(const vector<vector<int32_t>>& nextStates);
+	const unordered_map<int32_t, Interval>& patternIDToInterval,
+	int nfaEndState);
+bool IsEndState(const vector<int32_t>& index, int nfaEndState);
 int32_t RecordState(
 	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
 	const vector<int32_t>& state);

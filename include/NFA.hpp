@@ -14,6 +14,7 @@ namespace regex
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
+using PatternID = int;
 
 class NFAEdge
 {
@@ -36,6 +37,7 @@ class NFAGraph
 public:
 	vector<vector<NFAEdge>> adj;
 	int start;
+	int end;
 
 	NFAGraph();
 	int AddNode();
@@ -62,7 +64,7 @@ class NFA
 {
 public:
 	const int EPSILON = -1;
-	unordered_map<Interval, int32_t, IntervalHash> intervalMap;
+	unordered_map<Interval, PatternID, IntervalHash> intervalMap;
 	NFAGraph G;
 
 	explicit NFA(const RegularExpression::Ptr& exp);
@@ -76,10 +78,10 @@ private:
 	NFASubgraph ConvertSymbol(const SymbolExpression::Ptr& exp);
 
 public:
-	int32_t RecordInterval(char32_t lower, char32_t upper);
+	PatternID RecordInterval(char32_t lower, char32_t upper);
 
 	void Search(int start, int node, int pattern,
-				vector<unordered_map<int32_t, unordered_set<int>>>& table,
+				vector<unordered_map<PatternID, unordered_set<int>>>& table,
 				vector<bool>& visited);
 	unordered_map<int32_t, unordered_set<int>>
 		ComputeRow(int node,
@@ -90,7 +92,7 @@ public:
 	vector<DFATableRow> EpsilonClosure();
 };
 
-unordered_map<int32_t, Interval> GetPatternIDIntervalMap(
-	const unordered_map<Interval, int32_t, IntervalHash>& intervalMap);
+unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
+	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap);
 } // namespace regex
 #endif // NFA_HPP

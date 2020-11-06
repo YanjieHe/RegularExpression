@@ -84,6 +84,7 @@ void NFA::CreateGraph(const RegularExpression::Ptr& exp)
 {
 	auto subgraph = Convert(exp);
 	G.start = subgraph.start;
+	G.end = subgraph.end;
 }
 NFASubgraph NFA::Convert(const RegularExpression::Ptr& exp)
 {
@@ -144,12 +145,12 @@ NFASubgraph NFA::ConvertSymbol(const SymbolExpression::Ptr& exp)
 {
 	int start = G.AddNode();
 	int end = G.AddNode();
-	int pattern = RecordInterval(exp->character, exp->character);
+	PatternID pattern = RecordInterval(exp->character, exp->character);
 	G.AddEdge(NFAEdge(start, end, pattern));
 	return NFASubgraph(start, end);
 }
 
-int32_t NFA::RecordInterval(char32_t lower, char32_t upper)
+PatternID NFA::RecordInterval(char32_t lower, char32_t upper)
 {
 	Interval interval(lower, upper);
 	if (intervalMap.count(interval))
@@ -165,7 +166,7 @@ int32_t NFA::RecordInterval(char32_t lower, char32_t upper)
 }
 
 void NFA::Search(int start, int node, int pattern,
-				 vector<unordered_map<int32_t, unordered_set<int>>>& table,
+				 vector<unordered_map<PatternID, unordered_set<int>>>& table,
 				 vector<bool>& visited)
 {
 	if (visited.at(node))
@@ -254,17 +255,12 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	{
 		cout << UTF32ToUTF8(interval.ToString()) << " : " << patternID << endl;
 	}
-	unordered_map<int32_t, Interval> converter;
-	for (auto[interval, patternID] : intervalMap)
-	{
-		converter[patternID] = interval;
-	}
 	for (int node = 0; node < N; node++)
 	{
 		cout << "node = " << node << endl;
 		for (auto[patternID, set] : table.at(node))
 		{
-			auto interval = converter[patternID];
+			auto interval = patternIDToInterval[patternID];
 			cout << "pattern ID = " << UTF32ToUTF8(interval.ToString())
 				 << " : {";
 			for (int item : set)
@@ -307,7 +303,7 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		rows.push_back(DFATableRow(index, nextStates));
 		for (auto state : nextStates)
 		{
-			if (registeredStates.count(state) == 0)
+			if (registeredStates.count(state) == 0) // not found
 			{
 				registeredStates[state] = false;
 			}
@@ -332,11 +328,12 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			cout << item << " ";
 		}
 		cout << "} ";
-		for (size_t i = 0; i < row.nextStates.size(); i++)
+		for (PatternID patternID = 0;
+			 patternID < static_cast<int>(row.nextStates.size()); patternID++)
 		{
-			auto state = row.nextStates.at(i);
+			auto state = row.nextStates.at(patternID);
 			cout << "STATE ";
-			auto interval = converter[i];
+			auto interval = patternIDToInterval[patternID];
 			cout << UTF32ToUTF8(
 				u32string({static_cast<char32_t>(interval.lower)}));
 			cout << " ";
@@ -356,10 +353,10 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	return rows;
 }
 
-unordered_map<int32_t, Interval> GetPatternIDIntervalMap(
-	const unordered_map<Interval, int32_t, IntervalHash>& intervalMap)
+unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
+	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap)
 {
-	unordered_map<int32_t, Interval> result;
+	unordered_map<PatternID, Interval> result;
 	for (auto[interval, patternID] : intervalMap)
 	{
 		result[patternID] = interval;

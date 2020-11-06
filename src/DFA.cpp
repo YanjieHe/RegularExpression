@@ -43,7 +43,8 @@ u32string Interval::ToString() const
 }
 DFAGraph DFATableToDFAGraph(
 	const vector<DFATableRow>& rows,
-	const unordered_map<int32_t, Interval>& patternIDToInterval)
+	const unordered_map<int32_t, Interval>& patternIDToInterval,
+	int nfaEndState)
 {
 	unordered_map<vector<int32_t>, int32_t, Int32VectorHash> statesID;
 	DFAGraph graph;
@@ -56,39 +57,51 @@ DFAGraph DFATableToDFAGraph(
 		const auto& nextStates = row.nextStates;
 		if (!row.index.empty())
 		{
-			if (IsEndState(nextStates))
+			if (IsEndState(row.index, nfaEndState))
 			{
 				int id = RecordState(statesID, row.index);
 				graph.endStates.insert(id);
 			}
-			else
+			int from = RecordState(statesID, row.index);
+			int pattern = 0;
+			for (auto nextState : nextStates)
 			{
-				int from = RecordState(statesID, row.index);
-				int pattern = 0;
-				for (auto nextState : nextStates)
+				if (!nextState.empty())
 				{
-					if (!nextState.empty())
-					{
-						int to = RecordState(statesID, nextState);
-						graph.dfa.AddEdge(DFAEdge(from, to, pattern));
-					}
-					pattern++;
+					int to = RecordState(statesID, nextState);
+					graph.dfa.AddEdge(DFAEdge(from, to, pattern));
 				}
+				pattern++;
 			}
 		}
 	}
 	return graph;
 }
-bool IsEndState(const vector<vector<int32_t>>& nextStates)
+bool IsEndState(const vector<int32_t>& index, int nfaEndState)
 {
-	for (auto nextState : nextStates)
+	for (int i : index)
 	{
-		if (!nextState.empty())
+		if (i == nfaEndState)
 		{
-			return false;
+			return true;
 		}
 	}
-	return true;
+	return false;
+	// for (auto nextState : nextStates)
+	// {
+	// 	if (!nextState.empty())
+	// 	{
+	// 		for (int i : index)
+	// 		{
+	// 			if (i == nfaEndState)
+	// 			{
+	// 				return true;
+	// 			}
+	// 		}
+	// 		return false;
+	// 	}
+	// }
+	// return true;
 }
 int32_t RecordState(
 	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
@@ -107,43 +120,7 @@ int32_t RecordState(
 }
 bool DFAMatrix::Match(const u32string& str) const
 {
-	if (matrix.size() > 0)
-	{
-		int state = 0;
-		for (size_t i = 0; i < str.size(); i++)
-		{
-			char32_t c = str[i];
-			bool matched = false;
-			if (endStates.count(state))
-			{
-				return false;
-			}
-			for (size_t j = 0; j < matrix.at(0).size(); j++)
-			{
-				if (matrix.at(state).at(j) != -1)
-				{
-					const Interval& interval = patterns.at(j);
-					if (static_cast<char32_t>(interval.lower) <= c &&
-						c <= static_cast<char32_t>(interval.upper))
-					{
-						state =
-							matrix.at(state).at(j); // move to the next state
-						matched = true;
-						break;
-					}
-				}
-			}
-			if (!matched)
-			{
-				return false;
-			}
-		}
-		return endStates.count(state);
-	}
-	else
-	{
-		return str.size() == 0;
-	}
+	return MatchFromBeginning(str, 0, true) == static_cast<int>(str.size());
 }
 
 int DFAMatrix::Find(const u32string& str) const
@@ -152,7 +129,7 @@ int DFAMatrix::Find(const u32string& str) const
 	{
 		for (size_t start = 0; start < str.size(); start++)
 		{
-			int length = MatchFromBeginning(str.substr(start));
+			int length = MatchFromBeginning(str, start, false);
 			if (length != -1)
 			{
 				return start;
@@ -166,18 +143,28 @@ int DFAMatrix::Find(const u32string& str) const
 	}
 }
 
-int DFAMatrix::MatchFromBeginning(const u32string& str) const
+int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
+								  bool greedyMode) const
 {
 	if (matrix.size() > 0)
 	{
 		int state = 0;
-		for (size_t i = 0; i < str.size(); i++)
+		int lastMatchedLength = -1;
+		for (size_t i = startIndex; i < str.size(); i++)
 		{
 			char32_t c = str[i];
 			bool matched = false;
 			if (endStates.count(state))
 			{
-				return i;
+				std::cout << "end states count state" << std::endl;
+				if (greedyMode)
+				{
+					lastMatchedLength = i;
+				}
+				else
+				{
+					return i;
+				}
 			}
 			for (size_t j = 0; j < matrix.at(0).size(); j++)
 			{
@@ -196,16 +183,31 @@ int DFAMatrix::MatchFromBeginning(const u32string& str) const
 			}
 			if (!matched)
 			{
-				return -1;
+				std::cout << "not matched" << std::endl;
+				if (endStates.count(state))
+				{
+					return i;
+				}
+				else
+				{
+					return lastMatchedLength;
+				}
 			}
+		}
+		std::cout << "current state " << state << std::endl;
+		std::cout << "end states:" << std::endl;
+		for (auto endState : endStates)
+		{
+			std::cout << "end state = " << endState << std::endl;
 		}
 		if (endStates.count(state))
 		{
+			std::cout << "current state is end state" << std::endl;
 			return str.size();
 		}
 		else
 		{
-			return -1;
+			return lastMatchedLength;
 		}
 	}
 	else
@@ -213,6 +215,7 @@ int DFAMatrix::MatchFromBeginning(const u32string& str) const
 		return str.size();
 	}
 }
+
 DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph)
 {
 	DFAMatrix matrix;

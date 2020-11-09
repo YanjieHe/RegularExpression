@@ -58,12 +58,12 @@ public:
 				vector<unordered_map<PatternID, unordered_set<int>>>& table,
 				vector<bool>& visited);
 
-	unordered_map<int32_t, unordered_set<int>>
+	unordered_map<PatternID, unordered_set<int>>
 		ComputeRow(int node,
-				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
-	unordered_map<int32_t, unordered_set<int>> ComputeRowOfNodes(
+				   vector<unordered_map<PatternID, unordered_set<int>>>& table);
+	unordered_map<PatternID, unordered_set<int>> ComputeRowOfNodes(
 		vector<int> nodes,
-		vector<unordered_map<int32_t, unordered_set<int>>>& table);
+		vector<unordered_map<PatternID, unordered_set<int>>>& table);
 	vector<DFATableRow> EpsilonClosure();
 };
 

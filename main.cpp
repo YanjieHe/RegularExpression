@@ -13,7 +13,7 @@ void TestMatch(const regex::DFAMatrix& dfa, std::u32string text, bool expected)
 	{
 		cout << "ERROR!!!   ";
 	}
-	cout << "Test Match \"" << UTF32ToUTF8(text);
+	cout << "Test Match \"" << encoding::utf32_to_utf8(text);
 	cout << "\" expected: " << std::boolalpha << expected;
 	cout << " actual: " << std::boolalpha << actual << endl;
 }
@@ -26,8 +26,9 @@ void ViewDFAGraph(const regex::DFAGraph& dfaGraph)
 		for (auto edge : edges)
 		{
 			cout << edge.from << " -> " << edge.to << " : "
-				 << UTF32ToUTF8(dfaGraph.patternIDToIntervals.at(edge.pattern)
-									.ToString())
+				 << encoding::utf32_to_utf8(
+						dfaGraph.patternIDToIntervals.at(edge.pattern)
+							.ToString())
 				 << endl;
 		}
 	}
@@ -75,7 +76,8 @@ int main()
 	regex::ViewNFA(nfa);
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph = regex::DFATableToDFAGraph(
-		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.endVertex);
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap),
+		nfa.endVertex);
 	cout << "# of nodes = " << dfaGraph.dfa.NodeCount() << endl;
 	for (auto endState : dfaGraph.endStates)
 	{
@@ -86,8 +88,9 @@ int main()
 		for (auto edge : edges)
 		{
 			cout << edge.from << " -> " << edge.to << " : "
-				 << UTF32ToUTF8(dfaGraph.patternIDToIntervals.at(edge.pattern)
-									.ToString())
+				 << encoding::utf32_to_utf8(
+						dfaGraph.patternIDToIntervals.at(edge.pattern)
+							.ToString())
 				 << endl;
 		}
 	}

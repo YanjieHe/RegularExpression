@@ -88,21 +88,6 @@ bool IsEndState(const vector<int32_t>& index, int nfaEndState)
 		}
 	}
 	return false;
-	// for (auto nextState : nextStates)
-	// {
-	// 	if (!nextState.empty())
-	// 	{
-	// 		for (int i : index)
-	// 		{
-	// 			if (i == nfaEndState)
-	// 			{
-	// 				return true;
-	// 			}
-	// 		}
-	// 		return false;
-	// 	}
-	// }
-	// return true;
 }
 int32_t RecordState(
 	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,

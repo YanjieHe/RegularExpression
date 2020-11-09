@@ -49,14 +49,15 @@ void Test()
 	auto dfaTable = nfa.EpsilonClosure();
 	cout << "end vertices" << endl;
 	auto dfaGraph = regex::DFATableToDFAGraph(
-		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.G.end);
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap),
+		nfa.endVertex);
 	ViewDFAGraph(dfaGraph);
 	auto m2 = e2->Compile();
 	cout << "match \"aaaaa\" " << m2.MatchFromBeginning(U"aaaaa", 0, true)
 		 << endl;
-	for (int i = 0; i < static_cast<int>(m2.matrix.size()); i++)
+	for (size_t i = 0; i < m2.matrix.size(); i++)
 	{
-		for (int j = 0; j < static_cast<int>(m2.matrix.front().size()); j++)
+		for (size_t j = 0; j < m2.matrix.front().size(); j++)
 		{
 			cout << m2.matrix.at(i).at(j) << " ";
 		}
@@ -74,7 +75,7 @@ int main()
 	regex::ViewNFA(nfa);
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph = regex::DFATableToDFAGraph(
-		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.G.end);
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.endVertex);
 	cout << "# of nodes = " << dfaGraph.dfa.NodeCount() << endl;
 	for (auto endState : dfaGraph.endStates)
 	{

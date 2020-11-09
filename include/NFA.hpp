@@ -27,7 +27,7 @@ public:
 	NFAEdge(int from, int to, int pattern);
 	inline bool IsEpsilon() const
 	{
-		return pattern == -1;
+		return pattern == EPSILON;
 	}
 	static const int EPSILON = -1;
 };
@@ -36,8 +36,6 @@ class NFAGraph
 {
 public:
 	vector<vector<NFAEdge>> adj;
-	int start;
-	int end;
 
 	NFAGraph();
 	int AddNode();
@@ -66,6 +64,8 @@ public:
 	const int EPSILON = -1;
 	unordered_map<Interval, PatternID, IntervalHash> intervalMap;
 	NFAGraph G;
+	int startVertex;
+	int endVertex;
 
 	explicit NFA(const RegularExpression::Ptr& exp);
 	void CreateGraph(const RegularExpression::Ptr& exp);

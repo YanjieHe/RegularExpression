@@ -85,8 +85,8 @@ NFA::NFA(const RegularExpression::Ptr& exp)
 void NFA::CreateGraph(const RegularExpression::Ptr& exp)
 {
 	auto subgraph = Convert(exp);
-	G.start = subgraph.start;
-	G.end = subgraph.end;
+	this->startVertex = subgraph.start;
+	this->endVertex = subgraph.end;
 }
 NFASubgraph NFA::Convert(const RegularExpression::Ptr& exp)
 {
@@ -272,7 +272,7 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			cout << " }" << endl;
 		}
 	}
-	int start = G.start;
+	int start = this->startVertex;
 	vector<DFATableRow> rows;
 
 	cout << "intervalMap.size() = " << intervalMap.size() << endl;
@@ -384,7 +384,7 @@ void ViewNFA(const NFA& nfa)
 	cout << endl;
 	cout << "node [shape = point ]; start;" << endl;
 	cout << "node [shape = circle];" << endl;
-	cout << "start -> " << G.start << ";" << endl;
+	cout << "start -> " << nfa.startVertex << ";" << endl;
 	unordered_map<int32_t, Interval> converter;
 	for (auto[interval, patternID] : nfa.intervalMap)
 	{

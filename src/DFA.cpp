@@ -4,28 +4,6 @@
 namespace regex
 {
 
-DFAEdge::DFAEdge(int from, int to, int pattern)
-	: from{from}
-	, to{to}
-	, pattern{pattern}
-{
-}
-void DFA::AddEdge(const DFAEdge& edge)
-{
-	int n = NodeCount();
-	while (n <= edge.from || n <= edge.to)
-	{
-		adj.emplace_back();
-		n = NodeCount();
-	}
-	adj.at(edge.from).push_back(edge);
-}
-
-int DFA::NodeCount() const
-{
-	return static_cast<int>(adj.size());
-}
-
 u32string Interval::ToString() const
 {
 	if (lower == -1 && upper == -1)
@@ -70,7 +48,7 @@ DFAGraph DFATableToDFAGraph(
 				if (!nextState.empty())
 				{
 					int to = RecordState(statesID, nextState);
-					graph.dfa.AddEdge(DFAEdge(from, to, pattern));
+					graph.dfa.AddEdge(Edge(from, to, pattern));
 				}
 				pattern++;
 			}

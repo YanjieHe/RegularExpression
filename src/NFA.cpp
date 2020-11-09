@@ -19,53 +19,6 @@ using std::static_pointer_cast;
 using std::cout;
 using std::endl;
 
-NFAEdge::NFAEdge()
-	: from{0}
-	, to{0}
-	, pattern{0}
-{
-}
-NFAEdge::NFAEdge(int from, int to, int pattern)
-	: from{from}
-	, to{to}
-	, pattern(pattern)
-{
-}
-NFAGraph::NFAGraph()
-{
-}
-int NFAGraph::AddNode()
-{
-	int n = adj.size();
-	adj.emplace_back();
-	return n;
-}
-void NFAGraph::AddEdge(const NFAEdge& edge)
-{
-	int n = NodeCount();
-	while (n <= edge.from || n <= edge.to)
-	{
-		adj.emplace_back();
-		n = NodeCount();
-	}
-	adj.at(edge.from).push_back(edge);
-}
-int NFAGraph::NodeCount() const
-{
-	return static_cast<int>(adj.size());
-}
-vector<NFAEdge> NFAGraph::GetEdges() const
-{
-	vector<NFAEdge> edges;
-	for (const auto& edgeVec : adj)
-	{
-		for (const auto& edge : edgeVec)
-		{
-			edges.push_back(edge);
-		}
-	}
-	return edges;
-}
 NFASubgraph::NFASubgraph()
 	: start{0}
 	, end{0}
@@ -119,17 +72,17 @@ NFASubgraph NFA::ConvertAlternation(const AlternationExpression::Ptr& exp)
 	NFASubgraph graph2 = Convert(exp->right);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	G.AddEdge(NFAEdge(in, graph1.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(in, graph2.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph1.end, out, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph2.end, out, NFAEdge::EPSILON));
+	G.AddEdge(Edge(in, graph1.start, EPSILON));
+	G.AddEdge(Edge(in, graph2.start, EPSILON));
+	G.AddEdge(Edge(graph1.end, out, EPSILON));
+	G.AddEdge(Edge(graph2.end, out, EPSILON));
 	return NFASubgraph(in, out);
 }
 NFASubgraph NFA::ConvertConcatenation(const ConcatenationExpression::Ptr& exp)
 {
 	NFASubgraph src = Convert(exp->left);
 	NFASubgraph dest = Convert(exp->right);
-	G.AddEdge(NFAEdge(src.end, dest.start, NFAEdge::EPSILON));
+	G.AddEdge(Edge(src.end, dest.start, EPSILON));
 	return NFASubgraph(src.start, dest.end);
 }
 NFASubgraph NFA::ConvertKleenStar(const KleeneStarExpression::Ptr& exp)
@@ -137,10 +90,10 @@ NFASubgraph NFA::ConvertKleenStar(const KleeneStarExpression::Ptr& exp)
 	NFASubgraph graph = Convert(exp->innerExp);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	G.AddEdge(NFAEdge(in, graph.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(out, graph.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph.end, out, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(in, out, NFAEdge::EPSILON));
+	G.AddEdge(Edge(in, graph.start, EPSILON));
+	G.AddEdge(Edge(out, graph.start, EPSILON));
+	G.AddEdge(Edge(graph.end, out, EPSILON));
+	G.AddEdge(Edge(in, out, EPSILON));
 	return NFASubgraph(in, out);
 }
 NFASubgraph NFA::ConvertSymbol(const SymbolExpression::Ptr& exp)
@@ -148,7 +101,7 @@ NFASubgraph NFA::ConvertSymbol(const SymbolExpression::Ptr& exp)
 	int start = G.AddNode();
 	int end = G.AddNode();
 	PatternID pattern = RecordInterval(exp->character, exp->character);
-	G.AddEdge(NFAEdge(start, end, pattern));
+	G.AddEdge(Edge(start, end, pattern));
 	return NFASubgraph(start, end);
 }
 
@@ -374,7 +327,7 @@ void ViewNFA(const NFA& nfa)
 	cout << "rankdir=LR;" << endl;
 	cout << "size=\"8,5;\"" << endl;
 	cout << "node [shape = doublecircle];";
-	for (int i = 0; i < G.NodeCount(); i++)
+	for (size_t i = 0; i < G.NodeCount(); i++)
 	{
 		if (G.Adj(i).size() == 0)
 		{

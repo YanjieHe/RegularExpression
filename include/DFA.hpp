@@ -12,31 +12,77 @@ using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
 
-class DFAEdge
+static const int EPSILON = -1;
+
+class Edge
 {
 public:
-	int from;
-	int to;
+	size_t from;
+	size_t to;
 	int pattern;
 
-	DFAEdge();
-	DFAEdge(int from, int to, int pattern);
-	inline bool IsEpsilon() const
+	Edge()
+		: from{0}
+		, to{0}
+		, pattern{EPSILON}
+	{
+	}
+	Edge(size_t from, size_t to, int pattern)
+		: from{from}
+		, to{to}
+		, pattern{pattern}
+	{
+	}
+	bool IsEpsilon() const
 	{
 		return pattern == EPSILON;
 	}
-	const int EPSILON = -1;
 };
 
-class DFA
+class Graph
 {
 public:
-	vector<vector<DFAEdge>> adj;
+	vector<vector<Edge>> adj;
 
-	DFA() = default;
-
-	void AddEdge(const DFAEdge& edge);
-	int NodeCount() const;
+	Graph()
+	{
+	}
+	size_t AddNode()
+	{
+		size_t n = adj.size();
+		adj.emplace_back();
+		return n;
+	}
+	void AddEdge(const Edge& edge)
+	{
+		size_t n = NodeCount();
+		while (n <= edge.from || n <= edge.to)
+		{
+			adj.emplace_back();
+			n = NodeCount();
+		}
+		adj.at(edge.from).push_back(edge);
+	}
+	size_t NodeCount() const
+	{
+		return adj.size();
+	}
+	vector<Edge> GetEdges() const
+	{
+		vector<Edge> edges;
+		for (const auto& edgeVec : adj)
+		{
+			for (const auto& edge : edgeVec)
+			{
+				edges.push_back(edge);
+			}
+		}
+		return edges;
+	}
+	const vector<Edge>& Adj(int index) const
+	{
+		return adj.at(index);
+	}
 };
 
 class Interval
@@ -56,7 +102,7 @@ public:
 class DFAGraph
 {
 public:
-	DFA dfa;
+	Graph dfa;
 	unordered_set<int32_t> endStates;
 	vector<Interval> patternIDToIntervals;
 };

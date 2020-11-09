@@ -16,38 +16,6 @@ using std::unordered_set;
 using std::vector;
 using PatternID = int;
 
-class NFAEdge
-{
-public:
-	int from;
-	int to;
-	int pattern; // epsilon = -1
-
-	NFAEdge();
-	NFAEdge(int from, int to, int pattern);
-	inline bool IsEpsilon() const
-	{
-		return pattern == EPSILON;
-	}
-	static const int EPSILON = -1;
-};
-
-class NFAGraph
-{
-public:
-	vector<vector<NFAEdge>> adj;
-
-	NFAGraph();
-	int AddNode();
-	void AddEdge(const NFAEdge& edge);
-	int NodeCount() const;
-	vector<NFAEdge> GetEdges() const;
-	const vector<NFAEdge>& Adj(int index) const
-	{
-		return adj.at(index);
-	}
-};
-
 class NFASubgraph
 {
 public:
@@ -63,7 +31,7 @@ class NFA
 public:
 	const int EPSILON = -1;
 	unordered_map<Interval, PatternID, IntervalHash> intervalMap;
-	NFAGraph G;
+	Graph G;
 	int startVertex;
 	int endVertex;
 

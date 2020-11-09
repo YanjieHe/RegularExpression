@@ -19,57 +19,17 @@ using std::static_pointer_cast;
 using std::cout;
 using std::endl;
 
-NFASubgraph::NFASubgraph()
-	: start{0}
-	, end{0}
-{
-}
-NFASubgraph::NFASubgraph(int start, int end)
-	: start{start}
-	, end{end}
-{
-}
-
 NFA::NFA(const RegularExpression::Ptr& exp)
 {
 	intervalMap[Interval(EPSILON, EPSILON)] = EPSILON;
-	CreateGraph(exp);
-}
-void NFA::CreateGraph(const RegularExpression::Ptr& exp)
-{
-	auto subgraph = Convert(exp);
+	auto subgraph = VisitRegularExpression(exp);
 	this->startVertex = subgraph.start;
 	this->endVertex = subgraph.end;
 }
-NFASubgraph NFA::Convert(const RegularExpression::Ptr& exp)
+NFASubgraph NFA::VisitAlternation(const AlternationExpression::Ptr& exp)
 {
-	switch (exp->Kind())
-	{
-	case RegularExpressionKind::Alternation:
-	{
-		return ConvertAlternation(
-			static_pointer_cast<AlternationExpression>(exp));
-	}
-	case RegularExpressionKind::Concatenation:
-	{
-		return ConvertConcatenation(
-			static_pointer_cast<ConcatenationExpression>(exp));
-	}
-	case RegularExpressionKind::KleeneStar:
-	{
-		return ConvertKleenStar(static_pointer_cast<KleeneStarExpression>(exp));
-	}
-	default:
-	case RegularExpressionKind::Symbol:
-	{
-		return ConvertSymbol(static_pointer_cast<SymbolExpression>(exp));
-	}
-	}
-}
-NFASubgraph NFA::ConvertAlternation(const AlternationExpression::Ptr& exp)
-{
-	NFASubgraph graph1 = Convert(exp->left);
-	NFASubgraph graph2 = Convert(exp->right);
+	NFASubgraph graph1 = VisitRegularExpression(exp->left);
+	NFASubgraph graph2 = VisitRegularExpression(exp->right);
 	int in = G.AddNode();
 	int out = G.AddNode();
 	G.AddEdge(Edge(in, graph1.start, EPSILON));
@@ -78,16 +38,16 @@ NFASubgraph NFA::ConvertAlternation(const AlternationExpression::Ptr& exp)
 	G.AddEdge(Edge(graph2.end, out, EPSILON));
 	return NFASubgraph(in, out);
 }
-NFASubgraph NFA::ConvertConcatenation(const ConcatenationExpression::Ptr& exp)
+NFASubgraph NFA::VisitConcatenation(const ConcatenationExpression::Ptr& exp)
 {
-	NFASubgraph src = Convert(exp->left);
-	NFASubgraph dest = Convert(exp->right);
+	NFASubgraph src = VisitRegularExpression(exp->left);
+	NFASubgraph dest = VisitRegularExpression(exp->right);
 	G.AddEdge(Edge(src.end, dest.start, EPSILON));
 	return NFASubgraph(src.start, dest.end);
 }
-NFASubgraph NFA::ConvertKleenStar(const KleeneStarExpression::Ptr& exp)
+NFASubgraph NFA::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 {
-	NFASubgraph graph = Convert(exp->innerExp);
+	NFASubgraph graph = VisitRegularExpression(exp->innerExp);
 	int in = G.AddNode();
 	int out = G.AddNode();
 	G.AddEdge(Edge(in, graph.start, EPSILON));
@@ -96,11 +56,11 @@ NFASubgraph NFA::ConvertKleenStar(const KleeneStarExpression::Ptr& exp)
 	G.AddEdge(Edge(in, out, EPSILON));
 	return NFASubgraph(in, out);
 }
-NFASubgraph NFA::ConvertSymbol(const SymbolExpression::Ptr& exp)
+NFASubgraph NFA::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
 	int start = G.AddNode();
 	int end = G.AddNode();
-	PatternID pattern = RecordInterval(exp->character, exp->character);
+	PatternID pattern = RecordInterval(exp->lower, exp->upper);
 	G.AddEdge(Edge(start, end, pattern));
 	return NFASubgraph(start, end);
 }
@@ -115,7 +75,7 @@ PatternID NFA::RecordInterval(char32_t lower, char32_t upper)
 	else
 	{
 		int n = intervalMap.size();
-		intervalMap[interval] = n - 1; // minus epsilon
+		intervalMap[interval] = n - 1; // exclude epsilon
 		return n - 1;
 	}
 }
@@ -197,9 +157,9 @@ unordered_map<int32_t, unordered_set<int>> NFA::ComputeRowOfNodes(
 vector<DFATableRow> NFA::EpsilonClosure()
 {
 	const int EPSILON = -1;
-	int N = G.NodeCount();
+	size_t N = G.NodeCount();
 	vector<unordered_map<int32_t, unordered_set<int>>> table(N);
-	for (int node = 0; node < N; node++)
+	for (size_t node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);
 		Search(node, node, EPSILON, table, visited);
@@ -210,7 +170,7 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	{
 		cout << UTF32ToUTF8(interval.ToString()) << " : " << patternID << endl;
 	}
-	for (int node = 0; node < N; node++)
+	for (size_t node = 0; node < N; node++)
 	{
 		cout << "node = " << node << endl;
 		for (auto[patternID, set] : table.at(node))

@@ -11,7 +11,8 @@ DFAMatrix RegularExpression::Compile()
 	NFA nfa{exp};
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph = regex::DFATableToDFAGraph(
-		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.endVertex);
+		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap),
+		nfa.endVertex);
 	return CreateDFAMatrix(dfaGraph);
 }
 
@@ -50,8 +51,9 @@ RegularExpressionKind KleeneStarExpression::Kind() const
 	return RegularExpressionKind::KleeneStar;
 }
 
-SymbolExpression::SymbolExpression(char32_t character)
-	: character(character)
+SymbolExpression::SymbolExpression(char32_t lower, char32_t upper)
+	: lower{lower}
+	, upper{upper}
 {
 }
 
@@ -72,7 +74,7 @@ RegularExpression::Ptr operator+(const RegularExpression::Ptr& x,
 }
 RegularExpression::Ptr Symbol(char32_t c)
 {
-	return make_shared<SymbolExpression>(c);
+	return make_shared<SymbolExpression>(c, c);
 }
 RegularExpression::Ptr Literal(const u32string& text)
 {

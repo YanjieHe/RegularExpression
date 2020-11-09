@@ -19,38 +19,45 @@ using PatternID = int;
 class NFASubgraph
 {
 public:
-	int start;
-	int end;
+	size_t start;
+	size_t end;
 
-	NFASubgraph();
-	NFASubgraph(int start, int end);
+	NFASubgraph()
+		: start{0}
+		, end{0}
+	{
+	}
+	NFASubgraph(size_t start, size_t end)
+		: start{start}
+		, end{end}
+	{
+	}
 };
 
-class NFA
+class NFA : public RegularExpressionVisitor<NFASubgraph>
 {
 public:
-	const int EPSILON = -1;
 	unordered_map<Interval, PatternID, IntervalHash> intervalMap;
 	Graph G;
+
 	int startVertex;
 	int endVertex;
 
 	explicit NFA(const RegularExpression::Ptr& exp);
-	void CreateGraph(const RegularExpression::Ptr& exp);
 
-private:
-	NFASubgraph Convert(const RegularExpression::Ptr& exp);
-	NFASubgraph ConvertAlternation(const AlternationExpression::Ptr& exp);
-	NFASubgraph ConvertConcatenation(const ConcatenationExpression::Ptr& exp);
-	NFASubgraph ConvertKleenStar(const KleeneStarExpression::Ptr& exp);
-	NFASubgraph ConvertSymbol(const SymbolExpression::Ptr& exp);
+	NFASubgraph
+		VisitAlternation(const AlternationExpression::Ptr& exp) override;
+	NFASubgraph
+		VisitConcatenation(const ConcatenationExpression::Ptr& exp) override;
+	NFASubgraph VisitKleeneStar(const KleeneStarExpression::Ptr& exp) override;
+	NFASubgraph VisitSymbol(const SymbolExpression::Ptr& exp) override;
 
-public:
 	PatternID RecordInterval(char32_t lower, char32_t upper);
 
 	void Search(int start, int node, int pattern,
 				vector<unordered_map<PatternID, unordered_set<int>>>& table,
 				vector<bool>& visited);
+
 	unordered_map<int32_t, unordered_set<int>>
 		ComputeRow(int node,
 				   vector<unordered_map<int32_t, unordered_set<int>>>& table);
@@ -64,5 +71,6 @@ unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
 	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap);
 
 void ViewNFA(const NFA& nfa);
+
 } // namespace regex
 #endif // NFA_HPP

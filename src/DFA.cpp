@@ -3,6 +3,7 @@
 
 namespace regex
 {
+
 DFAEdge::DFAEdge(int from, int to, int pattern)
 	: from{from}
 	, to{to}
@@ -233,4 +234,5 @@ DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph)
 	}
 	return matrix;
 }
+
 } // namespace regex

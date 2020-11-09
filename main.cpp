@@ -1,6 +1,5 @@
 #include "RegularExpression.hpp"
 #include "NFA.hpp"
-#include "NFAViewer.hpp"
 #include "Encoding.hpp"
 #include <iostream>
 using std::cout;
@@ -72,7 +71,7 @@ int main()
 {
 	auto exp = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 	regex::NFA nfa{exp};
-	regex::NFAViewer::ViewNFA(nfa);
+	regex::ViewNFA(nfa);
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph = regex::DFATableToDFAGraph(
 		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap), nfa.G.end);

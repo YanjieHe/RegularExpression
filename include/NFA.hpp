@@ -94,5 +94,7 @@ public:
 
 unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
 	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap);
+
+void ViewNFA(const NFA& nfa);
 } // namespace regex
 #endif // NFA_HPP

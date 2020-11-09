@@ -108,6 +108,7 @@ public:
 	vector<vector<int>> matrix;
 	vector<Interval> patterns;
 	unordered_set<int> endStates;
+
 	bool Match(const u32string& str) const;
 	int Find(const u32string& str) const;
 	int MatchFromBeginning(const u32string& str, size_t startIndex,
@@ -118,11 +119,14 @@ DFAGraph DFATableToDFAGraph(
 	const vector<DFATableRow>& rows,
 	const unordered_map<int32_t, Interval>& patternIDToInterval,
 	int nfaEndState);
+
 bool IsEndState(const vector<int32_t>& index, int nfaEndState);
+
 int32_t RecordState(
 	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
 	const vector<int32_t>& state);
 
 DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph);
+
 } // namespace regex
 #endif // DFA_HPP

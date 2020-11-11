@@ -64,7 +64,7 @@ void TestRE2()
 
 void TestRE3()
 {
-	auto e3 = (Range(U'0', U'9') | Symbol('a'))->Many();
+	auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 	REJsonSerializer serializer;
 	auto actual = serializer.VisitRegularExpression(e3);
 	Json expected;

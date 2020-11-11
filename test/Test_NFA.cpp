@@ -88,7 +88,7 @@ void TestNFA2()
 
 void TestNFA3()
 {
-	auto e3 = (Range(U'0', U'9') | Symbol('a'))->Many();
+	auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 	NFA nfa(e3);
 	auto actual = NFAToJson(nfa);
 	Json expected;

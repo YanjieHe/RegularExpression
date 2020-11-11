@@ -46,7 +46,7 @@ void TestMatch2()
 
 void TestMatch3()
 {
-	auto e3 = (Range(U'0', U'9') | Symbol('a'))->Many();
+	auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 	auto matrix3 = e3->Compile();
 	TestMatch(__FUNCTION__, matrix3, U"1229a32", true);
 	TestMatch(__FUNCTION__, matrix3, U"aaa38a812a", true);

@@ -7,91 +7,200 @@
 
 namespace regex
 {
+using std::u32string;
+static const int EPSILON = -1;
+struct UnicodeRange
+{
+	int32_t lower;
+	int32_t upper;
+
+	UnicodeRange()
+		: lower{EPSILON}
+		, upper{EPSILON}
+	{
+	}
+	UnicodeRange(int32_t lower, int32_t upper)
+		: lower{lower}
+		, upper{upper}
+	{
+	}
+
+	bool IsEpsilon() const
+	{
+		return lower == EPSILON && upper == EPSILON;
+	}
+	bool InBetween(char32_t c) const
+	{
+		return lower <= static_cast<int32_t>(c) &&
+			   static_cast<int32_t>(c) <= upper;
+	}
+	u32string ToString() const;
+};
+} // namespace regex
+
+template <>
+struct std::hash<regex::UnicodeRange>
+{
+	size_t operator()(const regex::UnicodeRange& pattern) const noexcept
+	{
+		size_t h1 = static_cast<size_t>(pattern.lower);
+		size_t h2 = static_cast<size_t>(pattern.upper);
+		return h1 ^ (h2 << 1);
+	}
+};
+
+namespace regex
+{
 using std::vector;
 using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
+using std::optional;
 
-class DFAEdge
+using StateID = size_t;
+
+class UnicodePatterns
 {
 public:
-	int from;
-	int to;
-	int pattern;
+	unordered_map<UnicodeRange, int> patternToID;
+	unordered_map<int, UnicodeRange> IDToPattern;
 
-	DFAEdge();
-	DFAEdge(int from, int to, int pattern);
-	inline bool IsEpsilon() const
+	void Add(UnicodeRange pattern, int id)
 	{
-		return pattern == EPSILON;
+		patternToID[pattern] = id;
+		IDToPattern[id] = pattern;
 	}
-	const int EPSILON = -1;
+
+	size_t Size() const
+	{
+		return patternToID.size();
+	}
+
+	optional<int> GetIDByPattern(UnicodeRange pattern) const
+	{
+		if (patternToID.count(pattern))
+		{
+			return patternToID.at(pattern);
+		}
+		else
+		{
+			return optional<int>();
+		}
+	}
+
+	optional<UnicodeRange> GetPatternByID(int id) const
+	{
+		if (IDToPattern.count(id))
+		{
+			return IDToPattern.at(id);
+		}
+		else
+		{
+			return optional<UnicodeRange>();
+		}
+	}
+};
+
+class Edge
+{
+public:
+	StateID from;
+	StateID to;
+	UnicodeRange pattern;
+
+	Edge()
+		: from{0}
+		, to{0}
+		, pattern{UnicodeRange(EPSILON, EPSILON)}
+	{
+	}
+	Edge(StateID from, StateID to, UnicodeRange pattern)
+		: from{from}
+		, to{to}
+		, pattern{pattern}
+	{
+	}
+	bool IsEpsilon() const
+	{
+		return pattern.IsEpsilon();
+	}
+};
+
+class Graph
+{
+public:
+	vector<vector<Edge>> adj;
+
+	Graph()
+	{
+	}
+	StateID AddNode()
+	{
+		StateID n = adj.size();
+		adj.emplace_back();
+		return n;
+	}
+	void AddEdge(const Edge& edge)
+	{
+		size_t n = NodeCount();
+		while (n <= edge.from || n <= edge.to)
+		{
+			adj.emplace_back();
+			n = NodeCount();
+		}
+		adj.at(edge.from).push_back(edge);
+	}
+	size_t NodeCount() const
+	{
+		return adj.size();
+	}
+	vector<Edge> GetEdges() const
+	{
+		vector<Edge> edges;
+		for (const auto& edgeVec : adj)
+		{
+			for (const auto& edge : edgeVec)
+			{
+				edges.push_back(edge);
+			}
+		}
+		return edges;
+	}
+	const vector<Edge>& Adj(int index) const
+	{
+		return adj.at(index);
+	}
 };
 
 class DFA
 {
 public:
-	vector<vector<DFAEdge>> adj;
-
-	DFA() = default;
-
-	void AddEdge(const DFAEdge& edge);
-	int NodeCount() const;
-};
-
-class Interval
-{
-public:
-	int32_t lower;
-	int32_t upper;
-	Interval() = default;
-	Interval(int32_t lower, int32_t upper)
-		: lower{lower}
-		, upper{upper}
-	{
-	}
-	u32string ToString() const;
-};
-
-class DFAGraph
-{
-public:
-	DFA dfa;
-	unordered_set<int32_t> endStates;
-	vector<Interval> patternIDToIntervals;
+	Graph G;
+	unordered_set<StateID> endStates;
+	UnicodePatterns patterns;
 };
 
 class DFATableRow
 {
 public:
-	vector<int32_t> index;
-	vector<vector<int32_t>> nextStates;
+	vector<StateID> index;
+	vector<vector<StateID>> nextStates;
 	DFATableRow() = default;
-	DFATableRow(vector<int32_t> index, vector<vector<int32_t>> nextStates)
+	DFATableRow(vector<StateID> index, vector<vector<StateID>> nextStates)
 		: index{index}
 		, nextStates{nextStates}
 	{
 	}
 };
 
-inline bool operator==(const Interval& x, const Interval& y)
+inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
 {
 	return x.lower == y.lower && x.upper && y.upper;
 }
 
-struct IntervalHash
-{
-	size_t operator()(const Interval& interval) const noexcept
-	{
-		size_t h1 = static_cast<size_t>(interval.lower);
-		size_t h2 = static_cast<size_t>(interval.upper);
-		return h1 ^ (h2 << 1);
-	}
-};
-
 struct Int32VectorHash
 {
-	size_t operator()(const vector<int32_t>& ints) const
+	size_t operator()(const vector<StateID>& ints) const
 	{
 		size_t hash = ints.size();
 		for (auto& i : ints)
@@ -106,8 +215,8 @@ class DFAMatrix
 {
 public:
 	vector<vector<int>> matrix;
-	vector<Interval> patterns;
-	unordered_set<int> endStates;
+	UnicodePatterns patterns;
+	unordered_set<StateID> endStates;
 
 	bool Match(const u32string& str) const;
 	int Find(const u32string& str) const;
@@ -115,18 +224,17 @@ public:
 						   bool greedyMode) const;
 };
 
-DFAGraph DFATableToDFAGraph(
-	const vector<DFATableRow>& rows,
-	const unordered_map<int32_t, Interval>& patternIDToInterval,
-	int nfaEndState);
+DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
+							const UnicodePatterns& patterns, int nfaEndState);
 
-bool IsEndState(const vector<int32_t>& index, int nfaEndState);
+bool IsEndState(const vector<StateID>& index, StateID nfaEndState);
 
-int32_t RecordState(
-	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
-	const vector<int32_t>& state);
+StateID RecordState(
+	unordered_map<vector<StateID>, StateID, Int32VectorHash>& stateMap,
+	const vector<StateID>& state);
 
-DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph);
+DFAMatrix CreateDFAMatrix(const DFA& dfaGraph);
 
 } // namespace regex
+
 #endif // DFA_HPP

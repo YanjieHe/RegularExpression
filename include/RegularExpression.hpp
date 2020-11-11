@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <exception>
 #include "DFA.hpp"
 
 namespace regex
@@ -12,6 +13,7 @@ namespace regex
 using std::vector;
 using std::u32string;
 using std::shared_ptr;
+using std::static_pointer_cast;
 
 class RegularExpression;
 class AlternationExpression;
@@ -76,9 +78,57 @@ class SymbolExpression : public RegularExpression
 public:
 	typedef shared_ptr<SymbolExpression> Ptr;
 
-	char32_t character;
-	SymbolExpression(char32_t character);
+	char32_t lower; // included
+	char32_t upper; // included
+	SymbolExpression(char32_t lower, char32_t upper);
 	RegularExpressionKind Kind() const override;
+};
+
+template <typename ReturnType, typename... ArgTypes>
+class RegularExpressionVisitor
+{
+public:
+	ReturnType VisitRegularExpression(const RegularExpression::Ptr& exp,
+									  ArgTypes... args)
+	{
+		switch (exp->Kind())
+		{
+		case RegularExpressionKind::Alternation:
+		{
+			return VisitAlternation(
+				static_pointer_cast<AlternationExpression>(exp), args...);
+		}
+		case RegularExpressionKind::Concatenation:
+		{
+			return VisitConcatenation(
+				static_pointer_cast<ConcatenationExpression>(exp), args...);
+		}
+		case RegularExpressionKind::KleeneStar:
+		{
+			return VisitKleeneStar(
+				static_pointer_cast<KleeneStarExpression>(exp), args...);
+		}
+		case RegularExpressionKind::Symbol:
+		{
+			return VisitSymbol(static_pointer_cast<SymbolExpression>(exp),
+							   args...);
+		}
+		default:
+		{
+			// make the compiler happy
+			throw std::runtime_error("unreachable case branch");
+		}
+		}
+	}
+	virtual ReturnType VisitAlternation(const AlternationExpression::Ptr& exp,
+										ArgTypes... args) = 0;
+	virtual ReturnType
+		VisitConcatenation(const ConcatenationExpression::Ptr& exp,
+						   ArgTypes... args) = 0;
+	virtual ReturnType VisitKleeneStar(const KleeneStarExpression::Ptr& exp,
+									   ArgTypes... args) = 0;
+	virtual ReturnType VisitSymbol(const SymbolExpression::Ptr& exp,
+								   ArgTypes... args) = 0;
 };
 
 RegularExpression::Ptr operator|(const RegularExpression::Ptr& x,

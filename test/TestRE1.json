@@ -1,0 +1,29 @@
+{
+    "kind": "Alternation",
+    "left": {
+        "kind": "Concatenation",
+        "left": {
+            "kind": "Symbol",
+            "lower": "a",
+            "upper": "a"
+        },
+        "right": {
+            "kind": "Symbol",
+            "lower": "b",
+            "upper": "b"
+        }
+    },
+    "right": {
+        "kind": "Concatenation",
+        "left": {
+            "kind": "Symbol",
+            "lower": "b",
+            "upper": "b"
+        },
+        "right": {
+            "kind": "Symbol",
+            "lower": "a",
+            "upper": "a"
+        }
+    }
+}

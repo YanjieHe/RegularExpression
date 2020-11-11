@@ -4,31 +4,9 @@
 namespace regex
 {
 
-DFAEdge::DFAEdge(int from, int to, int pattern)
-	: from{from}
-	, to{to}
-	, pattern{pattern}
+u32string UnicodeRange::ToString() const
 {
-}
-void DFA::AddEdge(const DFAEdge& edge)
-{
-	int n = NodeCount();
-	while (n <= edge.from || n <= edge.to)
-	{
-		adj.emplace_back();
-		n = NodeCount();
-	}
-	adj.at(edge.from).push_back(edge);
-}
-
-int DFA::NodeCount() const
-{
-	return static_cast<int>(adj.size());
-}
-
-u32string Interval::ToString() const
-{
-	if (lower == -1 && upper == -1)
+	if (lower == EPSILON && upper == EPSILON)
 	{
 		return U"ε";
 	}
@@ -42,16 +20,18 @@ u32string Interval::ToString() const
 			   static_cast<char32_t>(upper) + U"]";
 	}
 }
-DFAGraph DFATableToDFAGraph(
-	const vector<DFATableRow>& rows,
-	const unordered_map<int32_t, Interval>& patternIDToInterval,
-	int nfaEndState)
+DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
+							const UnicodePatterns& patterns, int nfaEndState)
 {
-	unordered_map<vector<int32_t>, int32_t, Int32VectorHash> statesID;
-	DFAGraph graph;
-	for (int i = 0; i < static_cast<int>(patternIDToInterval.size()) - 1; i++)
+	unordered_map<vector<StateID>, StateID, Int32VectorHash> statesID;
+	DFA graph;
+	for (int i = 0; i < static_cast<int>(patterns.Size()) - 1; i++)
 	{
-		graph.patternIDToIntervals.push_back(patternIDToInterval.at(i));
+		// add all the patterns except epsilon
+		if (auto pattern = patterns.GetPatternByID(i))
+		{
+			graph.patterns.Add(pattern.value(), i);
+		}
 	}
 	for (auto row : rows)
 	{
@@ -60,27 +40,30 @@ DFAGraph DFATableToDFAGraph(
 		{
 			if (IsEndState(row.index, nfaEndState))
 			{
-				int id = RecordState(statesID, row.index);
+				StateID id = RecordState(statesID, row.index);
 				graph.endStates.insert(id);
 			}
-			int from = RecordState(statesID, row.index);
-			int pattern = 0;
+			StateID from = RecordState(statesID, row.index);
+			int patternID = 0;
 			for (auto nextState : nextStates)
 			{
 				if (!nextState.empty())
 				{
-					int to = RecordState(statesID, nextState);
-					graph.dfa.AddEdge(DFAEdge(from, to, pattern));
+					StateID to = RecordState(statesID, nextState);
+					if (auto pattern = patterns.GetPatternByID(patternID))
+					{
+						graph.G.AddEdge(Edge(from, to, pattern.value()));
+					}
 				}
-				pattern++;
+				patternID++;
 			}
 		}
 	}
 	return graph;
 }
-bool IsEndState(const vector<int32_t>& index, int nfaEndState)
+bool IsEndState(const vector<StateID>& index, StateID nfaEndState)
 {
-	for (int i : index)
+	for (StateID i : index)
 	{
 		if (i == nfaEndState)
 		{
@@ -89,9 +72,9 @@ bool IsEndState(const vector<int32_t>& index, int nfaEndState)
 	}
 	return false;
 }
-int32_t RecordState(
-	unordered_map<vector<int32_t>, int32_t, Int32VectorHash>& stateMap,
-	const vector<int32_t>& state)
+StateID RecordState(
+	unordered_map<vector<StateID>, StateID, Int32VectorHash>& stateMap,
+	const vector<StateID>& state)
 {
 	if (stateMap.count(state))
 	{
@@ -99,7 +82,7 @@ int32_t RecordState(
 	}
 	else
 	{
-		int n = stateMap.size();
+		size_t n = stateMap.size();
 		stateMap[state] = n;
 		return n;
 	}
@@ -142,7 +125,6 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 			bool matched = false;
 			if (endStates.count(state))
 			{
-				std::cout << "end states count state" << std::endl;
 				if (greedyMode)
 				{
 					lastMatchedLength = i;
@@ -156,20 +138,21 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 			{
 				if (matrix.at(state).at(j) != -1)
 				{
-					const Interval& interval = patterns.at(j);
-					if (static_cast<char32_t>(interval.lower) <= c &&
-						c <= static_cast<char32_t>(interval.upper))
+					if (auto pattern =
+							patterns.GetPatternByID(static_cast<int>(j)))
 					{
-						state =
-							matrix.at(state).at(j); // move to the next state
-						matched = true;
-						break;
+						if (pattern.value().InBetween(c))
+						{
+							// move to the next state
+							state = matrix.at(state).at(j);
+							matched = true;
+							break;
+						}
 					}
 				}
 			}
 			if (!matched)
 			{
-				std::cout << "not matched" << std::endl;
 				if (endStates.count(state))
 				{
 					return i;
@@ -180,15 +163,8 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 				}
 			}
 		}
-		std::cout << "current state " << state << std::endl;
-		std::cout << "end states:" << std::endl;
-		for (auto endState : endStates)
-		{
-			std::cout << "end state = " << endState << std::endl;
-		}
 		if (endStates.count(state))
 		{
-			std::cout << "current state is end state" << std::endl;
 			return str.size();
 		}
 		else
@@ -202,19 +178,19 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 	}
 }
 
-DFAMatrix CreateDFAMatrix(const DFAGraph& dfaGraph)
+DFAMatrix CreateDFAMatrix(const DFA& dfaGraph)
 {
 	DFAMatrix matrix;
 	matrix.matrix = vector<vector<int>>(
-		dfaGraph.dfa.NodeCount(),
-		vector<int>(dfaGraph.patternIDToIntervals.size(), -1));
-	matrix.patterns = dfaGraph.patternIDToIntervals;
+		dfaGraph.G.NodeCount(), vector<int>(dfaGraph.patterns.Size(), -1));
+	matrix.patterns = dfaGraph.patterns;
 	matrix.endStates = dfaGraph.endStates;
-	for (auto edges : dfaGraph.dfa.adj)
+	for (auto edges : dfaGraph.G.adj)
 	{
 		for (auto edge : edges)
 		{
-			matrix.matrix.at(edge.from).at(edge.pattern) = edge.to;
+			matrix.matrix.at(edge.from)
+				.at(matrix.patterns.GetIDByPattern(edge.pattern).value()) = edge.to;
 		}
 	}
 	return matrix;

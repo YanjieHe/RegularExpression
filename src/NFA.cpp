@@ -19,157 +19,72 @@ using std::static_pointer_cast;
 using std::cout;
 using std::endl;
 
-NFAEdge::NFAEdge()
-	: from{0}
-	, to{0}
-	, pattern{0}
-{
-}
-NFAEdge::NFAEdge(int from, int to, int pattern)
-	: from{from}
-	, to{to}
-	, pattern(pattern)
-{
-}
-NFAGraph::NFAGraph()
-{
-}
-int NFAGraph::AddNode()
-{
-	int n = adj.size();
-	adj.emplace_back();
-	return n;
-}
-void NFAGraph::AddEdge(const NFAEdge& edge)
-{
-	int n = NodeCount();
-	while (n <= edge.from || n <= edge.to)
-	{
-		adj.emplace_back();
-		n = NodeCount();
-	}
-	adj.at(edge.from).push_back(edge);
-}
-int NFAGraph::NodeCount() const
-{
-	return static_cast<int>(adj.size());
-}
-vector<NFAEdge> NFAGraph::GetEdges() const
-{
-	vector<NFAEdge> edges;
-	for (const auto& edgeVec : adj)
-	{
-		for (const auto& edge : edgeVec)
-		{
-			edges.push_back(edge);
-		}
-	}
-	return edges;
-}
-NFASubgraph::NFASubgraph()
-	: start{0}
-	, end{0}
-{
-}
-NFASubgraph::NFASubgraph(int start, int end)
-	: start{start}
-	, end{end}
-{
-}
-
 NFA::NFA(const RegularExpression::Ptr& exp)
 {
-	intervalMap[Interval(EPSILON, EPSILON)] = EPSILON;
-	CreateGraph(exp);
-}
-void NFA::CreateGraph(const RegularExpression::Ptr& exp)
-{
-	auto subgraph = Convert(exp);
+	auto subgraph = VisitRegularExpression(exp);
 	this->startVertex = subgraph.start;
 	this->endVertex = subgraph.end;
+	CollectPatterns();
 }
-NFASubgraph NFA::Convert(const RegularExpression::Ptr& exp)
+NFASubgraph NFA::VisitAlternation(const AlternationExpression::Ptr& exp)
 {
-	switch (exp->Kind())
-	{
-	case RegularExpressionKind::Alternation:
-	{
-		return ConvertAlternation(
-			static_pointer_cast<AlternationExpression>(exp));
-	}
-	case RegularExpressionKind::Concatenation:
-	{
-		return ConvertConcatenation(
-			static_pointer_cast<ConcatenationExpression>(exp));
-	}
-	case RegularExpressionKind::KleeneStar:
-	{
-		return ConvertKleenStar(static_pointer_cast<KleeneStarExpression>(exp));
-	}
-	default:
-	case RegularExpressionKind::Symbol:
-	{
-		return ConvertSymbol(static_pointer_cast<SymbolExpression>(exp));
-	}
-	}
-}
-NFASubgraph NFA::ConvertAlternation(const AlternationExpression::Ptr& exp)
-{
-	NFASubgraph graph1 = Convert(exp->left);
-	NFASubgraph graph2 = Convert(exp->right);
+	NFASubgraph graph1 = VisitRegularExpression(exp->left);
+	NFASubgraph graph2 = VisitRegularExpression(exp->right);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	G.AddEdge(NFAEdge(in, graph1.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(in, graph2.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph1.end, out, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph2.end, out, NFAEdge::EPSILON));
+	auto eps = UnicodeRange(EPSILON, EPSILON);
+	G.AddEdge(Edge(in, graph1.start, eps));
+	G.AddEdge(Edge(in, graph2.start, eps));
+	G.AddEdge(Edge(graph1.end, out, eps));
+	G.AddEdge(Edge(graph2.end, out, eps));
 	return NFASubgraph(in, out);
 }
-NFASubgraph NFA::ConvertConcatenation(const ConcatenationExpression::Ptr& exp)
+NFASubgraph NFA::VisitConcatenation(const ConcatenationExpression::Ptr& exp)
 {
-	NFASubgraph src = Convert(exp->left);
-	NFASubgraph dest = Convert(exp->right);
-	G.AddEdge(NFAEdge(src.end, dest.start, NFAEdge::EPSILON));
+	NFASubgraph src = VisitRegularExpression(exp->left);
+	NFASubgraph dest = VisitRegularExpression(exp->right);
+	auto eps = UnicodeRange(EPSILON, EPSILON);
+	G.AddEdge(Edge(src.end, dest.start, eps));
 	return NFASubgraph(src.start, dest.end);
 }
-NFASubgraph NFA::ConvertKleenStar(const KleeneStarExpression::Ptr& exp)
+NFASubgraph NFA::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 {
-	NFASubgraph graph = Convert(exp->innerExp);
+	NFASubgraph graph = VisitRegularExpression(exp->innerExp);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	G.AddEdge(NFAEdge(in, graph.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(out, graph.start, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(graph.end, out, NFAEdge::EPSILON));
-	G.AddEdge(NFAEdge(in, out, NFAEdge::EPSILON));
+	auto eps = UnicodeRange(EPSILON, EPSILON);
+	G.AddEdge(Edge(in, graph.start, eps));
+	G.AddEdge(Edge(out, graph.start, eps));
+	G.AddEdge(Edge(graph.end, out, eps));
+	G.AddEdge(Edge(in, out, eps));
 	return NFASubgraph(in, out);
 }
-NFASubgraph NFA::ConvertSymbol(const SymbolExpression::Ptr& exp)
+NFASubgraph NFA::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
 	int start = G.AddNode();
 	int end = G.AddNode();
-	PatternID pattern = RecordInterval(exp->character, exp->character);
-	G.AddEdge(NFAEdge(start, end, pattern));
+	UnicodeRange pattern(exp->lower, exp->upper);
+	G.AddEdge(Edge(start, end, pattern));
 	return NFASubgraph(start, end);
 }
 
-PatternID NFA::RecordInterval(char32_t lower, char32_t upper)
+void NFA::CollectPatterns()
 {
-	Interval interval(lower, upper);
-	if (intervalMap.count(interval))
+	patterns.Add(UnicodeRange(EPSILON, EPSILON), EPSILON);
+	for (auto edge : G.GetEdges())
 	{
-		return intervalMap[interval];
-	}
-	else
-	{
-		int n = intervalMap.size();
-		intervalMap[interval] = n - 1; // minus epsilon
-		return n - 1;
+		if (!patterns.GetIDByPattern(edge.pattern))
+		{
+			int n = static_cast<int>(patterns.Size());
+			patterns.Add(edge.pattern, n - 1);
+		}
 	}
 }
 
-void NFA::Search(int start, int node, int pattern,
-				 vector<unordered_map<PatternID, unordered_set<int>>>& table,
-				 vector<bool>& visited)
+void NFA::Search(
+	int start, int node, UnicodeRange pattern,
+	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
+	vector<bool>& visited)
 {
 	if (visited.at(node))
 	{
@@ -180,14 +95,14 @@ void NFA::Search(int start, int node, int pattern,
 		visited.at(node) = true;
 		for (const auto& adjEdge : G.Adj(node))
 		{
-			if (adjEdge.pattern == EPSILON && pattern != EPSILON)
+			if (adjEdge.pattern.IsEpsilon() && !pattern.IsEpsilon())
 			{
 				table[start][pattern].insert(adjEdge.to);
 				Search(start, adjEdge.to, pattern, table, visited);
 			}
-			else if (pattern == EPSILON)
+			else if (pattern.IsEpsilon())
 			{
-				if (adjEdge.pattern != EPSILON)
+				if (!adjEdge.pattern.IsEpsilon())
 				{
 					table[start][adjEdge.pattern].insert(adjEdge.to);
 				}
@@ -201,15 +116,16 @@ void NFA::Search(int start, int node, int pattern,
 	}
 }
 
-unordered_map<int32_t, unordered_set<int>>
-	NFA::ComputeRow(int node,
-					vector<unordered_map<int32_t, unordered_set<int>>>& table)
+unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
+	size_t node,
+	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
 {
-	auto epsilonNextStates = table[node][EPSILON];
-	unordered_map<int32_t, unordered_set<int>> nextStatesMap;
+	auto eps = UnicodeRange(EPSILON, EPSILON);
+	auto epsilonNextStates = table[node][eps];
+	unordered_map<UnicodeRange, unordered_set<StateID>> nextStatesMap;
 	for (auto[patternID, nextStates] : table[node])
 	{
-		if (patternID != EPSILON)
+		if (!patternID.IsEpsilon())
 		{
 			nextStatesMap[patternID] = nextStates;
 			// a -> aε*
@@ -222,11 +138,11 @@ unordered_map<int32_t, unordered_set<int>>
 	return nextStatesMap;
 }
 
-unordered_map<int32_t, unordered_set<int>> NFA::ComputeRowOfNodes(
-	vector<int> nodes,
-	vector<unordered_map<int32_t, unordered_set<int>>>& table)
+unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRowOfNodes(
+	vector<StateID> nodes,
+	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
 {
-	unordered_map<int32_t, unordered_set<int>> nodeStates;
+	unordered_map<UnicodeRange, unordered_set<StateID>> nodeStates;
 	for (auto node : nodes)
 	{
 		auto result = ComputeRow(node, table);
@@ -243,27 +159,26 @@ unordered_map<int32_t, unordered_set<int>> NFA::ComputeRowOfNodes(
 
 vector<DFATableRow> NFA::EpsilonClosure()
 {
-	const int EPSILON = -1;
-	int N = G.NodeCount();
-	vector<unordered_map<int32_t, unordered_set<int>>> table(N);
-	for (int node = 0; node < N; node++)
+	size_t N = G.NodeCount();
+	vector<unordered_map<UnicodeRange, unordered_set<StateID>>> table(N);
+	for (size_t node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);
-		Search(node, node, EPSILON, table, visited);
+		Search(node, node, UnicodeRange(EPSILON, EPSILON), table, visited);
 	}
 	using namespace std;
-	auto patternIDToInterval = GetPatternIDIntervalMap(intervalMap);
-	for (auto[patternID, interval] : patternIDToInterval)
-	{
-		cout << UTF32ToUTF8(interval.ToString()) << " : " << patternID << endl;
-	}
-	for (int node = 0; node < N; node++)
+	// auto patternIDToInterval = GetPatternIDIntervalMap(intervalMap);
+	// for (auto[patternID, interval] : patternIDToInterval)
+	// {
+	// 	cout << encoding::utf32_to_utf8(interval.ToString()) << " : "
+	// 		 << patternID << endl;
+	// }
+	for (size_t node = 0; node < N; node++)
 	{
 		cout << "node = " << node << endl;
-		for (auto[patternID, set] : table.at(node))
+		for (auto[pattern, set] : table.at(node))
 		{
-			auto interval = patternIDToInterval[patternID];
-			cout << "pattern ID = " << UTF32ToUTF8(interval.ToString())
+			cout << "pattern = " << encoding::utf32_to_utf8(pattern.ToString())
 				 << " : {";
 			for (int item : set)
 			{
@@ -272,34 +187,38 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			cout << " }" << endl;
 		}
 	}
-	int start = this->startVertex;
+	size_t start = this->startVertex;
 	vector<DFATableRow> rows;
 
-	cout << "intervalMap.size() = " << intervalMap.size() << endl;
-
-	unordered_map<vector<int32_t>, bool, Int32VectorHash> registeredStates;
-	vector<int32_t> index = {start};
+	unordered_map<vector<StateID>, bool, Int32VectorHash> registeredStates;
+	vector<size_t> index = {start};
 	bool allVisited = false;
 	while (!allVisited)
 	{
 		std::sort(index.begin(), index.end());
 		registeredStates[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
-		vector<vector<int32_t>> nextStates(
-			static_cast<int>(intervalMap.size()) - 1);
+		cout << "pattern size - 1 = " << (static_cast<int>(patterns.Size()) - 1)
+			 << endl;
+		vector<vector<StateID>> nextStates(static_cast<int>(patterns.Size()) -
+										   1);
 
-		for (auto[patternID, nextStatesSet] : nextStatesMap)
+		for (auto[pattern, nextStatesSet] : nextStatesMap)
 		{
-			cout << "pattern id " << patternID << ", next states set ";
+			cout << "pattern " << encoding::utf32_to_utf8(pattern.ToString())
+				 << ", next states set ";
 			for (auto item : nextStatesSet)
 			{
 				cout << item << " ";
 			}
 			cout << endl;
-			nextStates[patternID] =
-				vector<int32_t>(nextStatesSet.begin(), nextStatesSet.end());
-			std::sort(nextStates[patternID].begin(),
-					  nextStates[patternID].end());
+			if (auto index = patterns.GetIDByPattern(pattern))
+			{
+				nextStates[index.value()] =
+					vector<StateID>(nextStatesSet.begin(), nextStatesSet.end());
+				std::sort(nextStates[index.value()].begin(),
+						  nextStates[index.value()].end());
+			}
 			cout << "!!!" << endl;
 		}
 		rows.push_back(DFATableRow(index, nextStates));
@@ -330,14 +249,14 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			cout << item << " ";
 		}
 		cout << "} ";
-		for (PatternID patternID = 0;
-			 patternID < static_cast<int>(row.nextStates.size()); patternID++)
+		for (size_t i = 0; i < row.nextStates.size(); i++)
 		{
-			auto state = row.nextStates.at(patternID);
+			auto state = row.nextStates.at(i);
 			cout << "STATE ";
-			auto interval = patternIDToInterval[patternID];
-			cout << UTF32ToUTF8(
-				u32string({static_cast<char32_t>(interval.lower)}));
+			if (auto pattern = patterns.GetPatternByID(i))
+			{
+				cout << encoding::utf32_to_utf8(pattern.value().ToString());
+			}
 			cout << " ";
 			cout << "{";
 			for (auto item : state)
@@ -353,59 +272,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		viewRow(row);
 	}
 	return rows;
-}
-
-unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
-	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap)
-{
-	unordered_map<PatternID, Interval> result;
-	for (auto[interval, patternID] : intervalMap)
-	{
-		result[patternID] = interval;
-	}
-	return result;
-}
-
-void ViewNFA(const NFA& nfa)
-{
-	const auto& G = nfa.G;
-	auto edges = G.GetEdges();
-	cout << "digraph {" << endl;
-	cout << "rankdir=LR;" << endl;
-	cout << "size=\"8,5;\"" << endl;
-	cout << "node [shape = doublecircle];";
-	for (int i = 0; i < G.NodeCount(); i++)
-	{
-		if (G.Adj(i).size() == 0)
-		{
-			cout << i << ";";
-		}
-	}
-	cout << endl;
-	cout << "node [shape = point ]; start;" << endl;
-	cout << "node [shape = circle];" << endl;
-	cout << "start -> " << nfa.startVertex << ";" << endl;
-	unordered_map<int32_t, Interval> converter;
-	for (auto[interval, patternID] : nfa.intervalMap)
-	{
-		converter[patternID] = interval;
-	}
-	for (const auto& edge : edges)
-	{
-		cout << edge.from << " -> " << edge.to;
-		if (edge.IsEpsilon())
-		{
-			cout << "[label=\"@\"];" << endl;
-		}
-		else
-		{
-			auto interval = converter[edge.pattern];
-			cout << "[label=\"" << UTF32ToUTF8(u32string(
-									   {static_cast<char32_t>(interval.lower)}))
-				 << "\"];" << endl;
-		}
-	}
-	cout << "}" << endl;
 }
 
 } // namespace regex

@@ -20,4 +20,5 @@ void TestNFA1();
 
 void TestNFA2();
 
+void TestNFA3();
 #endif // TEST_NFA_HPP

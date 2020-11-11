@@ -19,5 +19,6 @@ public:
 
 void TestRE1();
 void TestRE2();
+void TestRE3();
 
 #endif // TEST_REGULAR_EXPRESSION_TREE_HPP

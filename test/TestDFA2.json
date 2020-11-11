@@ -1,7 +1,8 @@
 {
     "end_states": [
         2,
-        1
+        1,
+        0
     ],
     "graph": {
         "edges": [

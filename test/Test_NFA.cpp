@@ -73,7 +73,7 @@ void TestNFA1()
 
 void TestNFA2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	NFA nfa(e2);
 	auto actual = NFAToJson(nfa);
 	Json expected;
@@ -84,4 +84,19 @@ void TestNFA2()
 								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
 		 << endl;
 	NFAToDotFile(nfa, "NFA2.dot");
+}
+
+void TestNFA3()
+{
+	auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
+	NFA nfa(e3);
+	auto actual = NFAToJson(nfa);
+	Json expected;
+	ifstream stream("../test/TestNFA3.json");
+	stream >> expected;
+	cout << __FUNCTION__ << " "
+		 << ((actual == expected) ? "passed!"
+								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
+		 << endl;
+	NFAToDotFile(nfa, "NFA3.dot");
 }

@@ -78,8 +78,7 @@ void TestDFA1()
 	auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 	NFA nfa(e1);
 	auto dfaTable = nfa.EpsilonClosure();
-	cout << std::setw(4) << DFATableToJson(dfaTable) << endl;
-	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.endVertex);
+	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 	DFAToDotFile(dfa, "DFA1.dot");
 	auto actual = DFAToJson(dfa);
 	Json expected;
@@ -93,15 +92,31 @@ void TestDFA1()
 
 void TestDFA2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	NFA nfa(e2);
 	auto dfaTable = nfa.EpsilonClosure();
-	cout << std::setw(4) << DFATableToJson(dfaTable) << endl;
-	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.endVertex);
+	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 	DFAToDotFile(dfa, "DFA2.dot");
 	auto actual = DFAToJson(dfa);
 	Json expected;
 	ifstream stream("../test/TestDFA2.json");
+	stream >> expected;
+	cout << __FUNCTION__ << " "
+		 << ((actual == expected) ? "passed!"
+								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
+		 << endl;
+}
+
+void TestDFA3()
+{
+	auto e3 = (Range(U'0', U'9') | Symbol('a'))->Many();
+	NFA nfa(e3);
+	auto dfaTable = nfa.EpsilonClosure();
+	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+	DFAToDotFile(dfa, "DFA3.dot");
+	auto actual = DFAToJson(dfa);
+	Json expected;
+	ifstream stream("../test/TestDFA3.json");
 	stream >> expected;
 	cout << __FUNCTION__ << " "
 		 << ((actual == expected) ? "passed!"

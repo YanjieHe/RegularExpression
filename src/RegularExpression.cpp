@@ -11,8 +11,14 @@ DFAMatrix RegularExpression::Compile()
 	NFA nfa{exp};
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph =
-		regex::DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.endVertex);
+		regex::DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 	return CreateDFAMatrix(dfaGraph);
+}
+
+RegularExpression::Ptr RegularExpression::Many()
+{
+	RegularExpression::Ptr exp = shared_from_this();
+	return make_shared<KleeneStarExpression>(exp);
 }
 
 AlternationExpression::AlternationExpression(
@@ -93,10 +99,8 @@ RegularExpression::Ptr Literal(const u32string& text)
 	}
 	return res;
 }
-
-RegularExpression::Ptr Many(const RegularExpression::Ptr& x)
+RegularExpression::Ptr Range(char32_t lower, char32_t upper)
 {
-	return make_shared<KleeneStarExpression>(x);
+	return make_shared<SymbolExpression>(lower, upper);
 }
-
 } // namespace regex

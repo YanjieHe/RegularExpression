@@ -50,11 +50,25 @@ void TestRE1()
 
 void TestRE2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	REJsonSerializer serializer;
 	auto actual = serializer.VisitRegularExpression(e2);
 	Json expected;
 	ifstream stream("../test/TestRE2.json");
+	stream >> expected;
+	cout << __FUNCTION__ << " "
+		 << ((actual == expected) ? "passed!"
+								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
+		 << endl;
+}
+
+void TestRE3()
+{
+	auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
+	REJsonSerializer serializer;
+	auto actual = serializer.VisitRegularExpression(e3);
+	Json expected;
+	ifstream stream("../test/TestRE3.json");
 	stream >> expected;
 	cout << __FUNCTION__ << " "
 		 << ((actual == expected) ? "passed!"

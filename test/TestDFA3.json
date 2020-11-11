@@ -1,0 +1,53 @@
+{
+    "end_states": [
+        3,
+        2,
+        1,
+        0
+    ],
+    "graph": {
+        "edges": [
+            {
+                "from": 0,
+                "pattern": "[0 - 9]",
+                "to": 1
+            },
+            {
+                "from": 0,
+                "pattern": "a",
+                "to": 2
+            },
+            {
+                "from": 1,
+                "pattern": "[0 - 9]",
+                "to": 1
+            },
+            {
+                "from": 1,
+                "pattern": "a",
+                "to": 2
+            },
+            {
+                "from": 2,
+                "pattern": "[0 - 9]",
+                "to": 3
+            },
+            {
+                "from": 2,
+                "pattern": "a",
+                "to": 2
+            },
+            {
+                "from": 3,
+                "pattern": "[0 - 9]",
+                "to": 3
+            },
+            {
+                "from": 3,
+                "pattern": "a",
+                "to": 2
+            }
+        ],
+        "type": "Graph"
+    }
+}

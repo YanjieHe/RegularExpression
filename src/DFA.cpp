@@ -1,5 +1,6 @@
 #include "DFA.hpp"
 #include <iostream>
+#include <stack>
 
 namespace regex
 {
@@ -21,7 +22,8 @@ u32string UnicodeRange::ToString() const
 	}
 }
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
-							const UnicodePatterns& patterns, int nfaEndState)
+					   const UnicodePatterns& patterns, const Graph& nfaGraph,
+					   int nfaEndState)
 {
 	unordered_map<vector<StateID>, StateID, Int32VectorHash> statesID;
 	DFA graph;
@@ -38,7 +40,7 @@ DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 		const auto& nextStates = row.nextStates;
 		if (!row.index.empty())
 		{
-			if (IsEndState(row.index, nfaEndState))
+			if (IsEndState(row.index, nfaGraph, nfaEndState))
 			{
 				StateID id = RecordState(statesID, row.index);
 				graph.endStates.insert(id);
@@ -61,11 +63,16 @@ DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 	}
 	return graph;
 }
-bool IsEndState(const vector<StateID>& index, StateID nfaEndState)
+bool IsEndState(const vector<StateID>& index, const Graph& nfaGraph,
+				StateID nfaEndState)
 {
 	for (StateID i : index)
 	{
 		if (i == nfaEndState)
+		{
+			return true;
+		}
+		else if (CanTransit(nfaGraph, i, nfaEndState))
 		{
 			return true;
 		}
@@ -189,11 +196,41 @@ DFAMatrix CreateDFAMatrix(const DFA& dfaGraph)
 	{
 		for (auto edge : edges)
 		{
-			matrix.matrix.at(edge.from)
-				.at(matrix.patterns.GetIDByPattern(edge.pattern).value()) = edge.to;
+			matrix.matrix.at(edge.from).at(
+				matrix.patterns.GetIDByPattern(edge.pattern).value()) = edge.to;
 		}
 	}
 	return matrix;
 }
 
+bool CanTransit(const Graph& G, StateID s1, StateID s2)
+{
+	std::stack<StateID> stack;
+	unordered_set<StateID> visited;
+	stack.push(s1);
+	while (!stack.empty())
+	{
+		StateID current = stack.top();
+		stack.pop();
+		if (current == s2)
+		{
+			return true;
+		}
+		else
+		{
+			if (!visited.count(current))
+			{
+				visited.insert(current);
+				for (auto edge : G.Adj(current))
+				{
+					if (edge.pattern.IsEpsilon())
+					{
+						stack.push(edge.to);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
 } // namespace regex

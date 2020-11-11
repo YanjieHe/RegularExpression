@@ -13,4 +13,6 @@ void TestDFA1();
 
 void TestDFA2();
 
+void TestDFA3();
+
 #endif // TEST_DFA_HPP

@@ -225,15 +225,17 @@ public:
 };
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
-							const UnicodePatterns& patterns, int nfaEndState);
+					   const UnicodePatterns& patterns,const Graph& nfaGraph, int nfaEndState);
 
-bool IsEndState(const vector<StateID>& index, StateID nfaEndState);
+bool IsEndState(const vector<StateID>& index, const Graph& nfaGraph, StateID nfaEndState);
 
 StateID RecordState(
 	unordered_map<vector<StateID>, StateID, Int32VectorHash>& stateMap,
 	const vector<StateID>& state);
 
 DFAMatrix CreateDFAMatrix(const DFA& dfaGraph);
+
+bool CanTransit(const Graph& G, StateID s1, StateID s2);
 
 } // namespace regex
 

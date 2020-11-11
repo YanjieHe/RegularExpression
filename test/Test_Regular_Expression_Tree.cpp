@@ -61,3 +61,17 @@ void TestRE2()
 								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
 		 << endl;
 }
+
+void TestRE3()
+{
+	auto e3 = (Range(U'0', U'9') | Symbol('a'))->Many();
+	REJsonSerializer serializer;
+	auto actual = serializer.VisitRegularExpression(e3);
+	Json expected;
+	ifstream stream("../test/TestRE3.json");
+	stream >> expected;
+	cout << __FUNCTION__ << " "
+		 << ((actual == expected) ? "passed!"
+								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
+		 << endl;
+}

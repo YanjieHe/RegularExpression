@@ -7,5 +7,6 @@ using std::string;
 void TestMatch(string functionName, const DFAMatrix& pattern, u32string input, bool expected);
 void TestMatch1();
 void TestMatch2();
+void TestMatch3();
 
 #endif // TEST_MATCH_HPP

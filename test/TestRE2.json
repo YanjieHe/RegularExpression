@@ -1,0 +1,19 @@
+{
+    "kind": "Concatenation",
+    "left": {
+        "inner_exp": {
+            "kind": "Symbol",
+            "lower": "a",
+            "upper": "a"
+        },
+        "kind": "KleeneStar"
+    },
+    "right": {
+        "inner_exp": {
+            "kind": "Symbol",
+            "lower": "b",
+            "upper": "b"
+        },
+        "kind": "KleeneStar"
+    }
+}

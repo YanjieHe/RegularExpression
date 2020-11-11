@@ -1,0 +1,31 @@
+{
+    "end_states": [
+        2,
+        1
+    ],
+    "graph": {
+        "edges": [
+            {
+                "from": 0,
+                "pattern": "a",
+                "to": 1
+            },
+            {
+                "from": 1,
+                "pattern": "a",
+                "to": 1
+            },
+            {
+                "from": 1,
+                "pattern": "b",
+                "to": 2
+            },
+            {
+                "from": 2,
+                "pattern": "b",
+                "to": 2
+            }
+        ],
+        "type": "Graph"
+    }
+}

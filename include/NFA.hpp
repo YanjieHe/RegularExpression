@@ -7,6 +7,7 @@
 #include "RegularExpression.hpp"
 #include <cstdint>
 #include "DFA.hpp"
+#include <optional>
 
 namespace regex
 {
@@ -14,20 +15,20 @@ namespace regex
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
-using PatternID = int;
+using std::optional;
 
 class NFASubgraph
 {
 public:
-	size_t start;
-	size_t end;
+	StateID start;
+	StateID end;
 
 	NFASubgraph()
 		: start{0}
 		, end{0}
 	{
 	}
-	NFASubgraph(size_t start, size_t end)
+	NFASubgraph(StateID start, StateID end)
 		: start{start}
 		, end{end}
 	{
@@ -37,11 +38,10 @@ public:
 class NFA : public RegularExpressionVisitor<NFASubgraph>
 {
 public:
-	unordered_map<Interval, PatternID, IntervalHash> intervalMap;
 	Graph G;
-
-	int startVertex;
-	int endVertex;
+	UnicodePatterns patterns;
+	size_t startVertex;
+	size_t endVertex;
 
 	explicit NFA(const RegularExpression::Ptr& exp);
 
@@ -52,25 +52,21 @@ public:
 	NFASubgraph VisitKleeneStar(const KleeneStarExpression::Ptr& exp) override;
 	NFASubgraph VisitSymbol(const SymbolExpression::Ptr& exp) override;
 
-	PatternID RecordInterval(char32_t lower, char32_t upper);
+	void CollectPatterns();
 
-	void Search(int start, int node, int pattern,
-				vector<unordered_map<PatternID, unordered_set<int>>>& table,
-				vector<bool>& visited);
+	void Search(
+		int start, int node, UnicodeRange pattern,
+		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
+		vector<bool>& visited);
 
-	unordered_map<PatternID, unordered_set<int>>
-		ComputeRow(int node,
-				   vector<unordered_map<PatternID, unordered_set<int>>>& table);
-	unordered_map<PatternID, unordered_set<int>> ComputeRowOfNodes(
-		vector<int> nodes,
-		vector<unordered_map<PatternID, unordered_set<int>>>& table);
+	unordered_map<UnicodeRange, unordered_set<StateID>> ComputeRow(
+		size_t node,
+		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
+	unordered_map<UnicodeRange, unordered_set<StateID>> ComputeRowOfNodes(
+		vector<StateID> nodes,
+		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
 	vector<DFATableRow> EpsilonClosure();
 };
-
-unordered_map<PatternID, Interval> GetPatternIDIntervalMap(
-	const unordered_map<Interval, PatternID, IntervalHash>& intervalMap);
-
-void ViewNFA(const NFA& nfa);
 
 } // namespace regex
 #endif // NFA_HPP

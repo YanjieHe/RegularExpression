@@ -7,12 +7,11 @@ using std::make_shared;
 
 DFAMatrix RegularExpression::Compile()
 {
-	shared_ptr<RegularExpression> exp = shared_from_this();
+	RegularExpression::Ptr exp = shared_from_this();
 	NFA nfa{exp};
 	auto dfaTable = nfa.EpsilonClosure();
-	auto dfaGraph = regex::DFATableToDFAGraph(
-		dfaTable, regex::GetPatternIDIntervalMap(nfa.intervalMap),
-		nfa.endVertex);
+	auto dfaGraph =
+		regex::DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.endVertex);
 	return CreateDFAMatrix(dfaGraph);
 }
 

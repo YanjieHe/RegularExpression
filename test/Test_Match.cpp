@@ -37,7 +37,7 @@ void TestMatch1()
 
 void TestMatch2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	auto matrix2 = e2->Compile();
 	TestMatch(__FUNCTION__, matrix2, U"aaaaa", true);
 	TestMatch(__FUNCTION__, matrix2, U"aaaaabb", true);

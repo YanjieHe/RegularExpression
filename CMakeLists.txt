@@ -11,7 +11,7 @@ include_directories(include/ libs/ test/)
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB TESTS "test/*.cpp")
 
-add_executable(RegularExpression main.cpp ${SOURCES} ${TESTS})
+add_executable(RegularExpression ${SOURCES} ${TESTS})
 
 SET(CMAKE_BUILD_TYPE "Debug") 
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")

@@ -93,7 +93,7 @@ void TestDFA1()
 
 void TestDFA2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	NFA nfa(e2);
 	auto dfaTable = nfa.EpsilonClosure();
 	cout << std::setw(4) << DFATableToJson(dfaTable) << endl;

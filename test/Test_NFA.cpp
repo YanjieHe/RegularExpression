@@ -73,7 +73,7 @@ void TestNFA1()
 
 void TestNFA2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	NFA nfa(e2);
 	auto actual = NFAToJson(nfa);
 	Json expected;

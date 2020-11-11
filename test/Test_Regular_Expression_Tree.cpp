@@ -50,7 +50,7 @@ void TestRE1()
 
 void TestRE2()
 {
-	auto e2 = Many(Symbol(U'a')) + Many(Symbol(U'b'));
+	auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 	REJsonSerializer serializer;
 	auto actual = serializer.VisitRegularExpression(e2);
 	Json expected;

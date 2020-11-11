@@ -37,6 +37,8 @@ public:
 	virtual RegularExpressionKind Kind() const = 0;
 
 	DFAMatrix Compile();
+
+	RegularExpression::Ptr Many();
 };
 
 class AlternationExpression : public RegularExpression
@@ -138,7 +140,6 @@ RegularExpression::Ptr operator+(const RegularExpression::Ptr& x,
 
 RegularExpression::Ptr Symbol(char32_t c);
 RegularExpression::Ptr Literal(const u32string& text);
-RegularExpression::Ptr Many(const RegularExpression::Ptr& x);
 
 } // namespace regex
 #endif /* REGULAREXPRESSION_HPP */

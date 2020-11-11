@@ -15,6 +15,12 @@ DFAMatrix RegularExpression::Compile()
 	return CreateDFAMatrix(dfaGraph);
 }
 
+RegularExpression::Ptr RegularExpression::Many()
+{
+	RegularExpression::Ptr exp = shared_from_this();
+	return make_shared<KleeneStarExpression>(exp);
+}
+
 AlternationExpression::AlternationExpression(
 	const RegularExpression::Ptr& left, const RegularExpression::Ptr& right)
 	: left{left}
@@ -92,11 +98,6 @@ RegularExpression::Ptr Literal(const u32string& text)
 		}
 	}
 	return res;
-}
-
-RegularExpression::Ptr Many(const RegularExpression::Ptr& x)
-{
-	return make_shared<KleeneStarExpression>(x);
 }
 
 } // namespace regex

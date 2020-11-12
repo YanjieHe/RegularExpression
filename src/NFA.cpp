@@ -139,7 +139,7 @@ unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
 }
 
 unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRowOfNodes(
-	vector<StateID> nodes,
+	std::set<StateID> nodes,
 	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
 {
 	unordered_map<UnicodeRange, unordered_set<StateID>> nodeStates;
@@ -167,59 +167,50 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		Search(node, node, UnicodeRange(EPSILON, EPSILON), table, visited);
 	}
 	using namespace std;
-	// auto patternIDToInterval = GetPatternIDIntervalMap(intervalMap);
-	// for (auto[patternID, interval] : patternIDToInterval)
+
+	// for (size_t node = 0; node < N; node++)
 	// {
-	// 	cout << encoding::utf32_to_utf8(interval.ToString()) << " : "
-	// 		 << patternID << endl;
+	// 	cout << "node = " << node << endl;
+	// 	for (auto[pattern, set] : table.at(node))
+	// 	{
+	// 		cout << "pattern = " << encoding::utf32_to_utf8(pattern.ToString())
+	// 			 << " : {";
+	// 		for (int item : set)
+	// 		{
+	// 			cout << " " << item;
+	// 		}
+	// 		cout << " }" << endl;
+	// 	}
 	// }
-	for (size_t node = 0; node < N; node++)
-	{
-		cout << "node = " << node << endl;
-		for (auto[pattern, set] : table.at(node))
-		{
-			cout << "pattern = " << encoding::utf32_to_utf8(pattern.ToString())
-				 << " : {";
-			for (int item : set)
-			{
-				cout << " " << item;
-			}
-			cout << " }" << endl;
-		}
-	}
 	size_t start = this->startVertex;
 	vector<DFATableRow> rows;
 
-	unordered_map<vector<StateID>, bool, Int32VectorHash> registeredStates;
-	vector<size_t> index = {start};
+	unordered_map<std::set<StateID>, bool, StateIDSetHash> registeredStates;
+	std::set<StateID> index = {start};
 	bool allVisited = false;
 	while (!allVisited)
 	{
-		std::sort(index.begin(), index.end());
 		registeredStates[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
 		cout << "pattern size - 1 = " << (static_cast<int>(patterns.Size()) - 1)
 			 << endl;
-		vector<vector<StateID>> nextStates(static_cast<int>(patterns.Size()) -
-										   1);
+		vector<std::set<StateID>> nextStates(static_cast<int>(patterns.Size()) -
+											 1);
 
 		for (auto[pattern, nextStatesSet] : nextStatesMap)
 		{
-			cout << "pattern " << encoding::utf32_to_utf8(pattern.ToString())
-				 << ", next states set ";
-			for (auto item : nextStatesSet)
-			{
-				cout << item << " ";
-			}
-			cout << endl;
+			// cout << "pattern " << encoding::utf32_to_utf8(pattern.ToString())
+			// 	 << ", next states set ";
+			// for (auto item : nextStatesSet)
+			// {
+			// 	cout << item << " ";
+			// }
+			// cout << endl;
 			if (auto index = patterns.GetIDByPattern(pattern))
 			{
-				nextStates[index.value()] =
-					vector<StateID>(nextStatesSet.begin(), nextStatesSet.end());
-				std::sort(nextStates[index.value()].begin(),
-						  nextStates[index.value()].end());
+				nextStates[index.value()] = std::set<StateID>(
+					nextStatesSet.begin(), nextStatesSet.end());
 			}
-			cout << "!!!" << endl;
 		}
 		rows.push_back(DFATableRow(index, nextStates));
 		for (auto state : nextStates)

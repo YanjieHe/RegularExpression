@@ -4,11 +4,22 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 
 namespace regex
 {
 using std::u32string;
 static const int EPSILON = -1;
+using StateID = size_t;
+enum class RangeType
+{
+	Epsilon,
+	LineStart,
+	LineEnd,
+	WordStart,
+	WordEnd,
+	CharacterRange
+};
 struct UnicodeRange
 {
 	int32_t lower;
@@ -56,8 +67,6 @@ using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
 using std::optional;
-
-using StateID = size_t;
 
 class UnicodePatterns
 {
@@ -172,6 +181,19 @@ public:
 	}
 };
 
+struct StateIDSetHash
+{
+	size_t operator()(const std::set<StateID>& stateIDs) const
+	{
+		size_t hash = stateIDs.size();
+		for (auto& i : stateIDs)
+		{
+			hash = hash ^ (i + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+		}
+		return hash;
+	}
+};
+
 class DFA
 {
 public:
@@ -183,10 +205,10 @@ public:
 class DFATableRow
 {
 public:
-	vector<StateID> index;
-	vector<vector<StateID>> nextStates;
+	std::set<StateID> index;
+	vector<std::set<StateID>> nextStates;
 	DFATableRow() = default;
-	DFATableRow(vector<StateID> index, vector<vector<StateID>> nextStates)
+	DFATableRow(std::set<StateID> index, vector<std::set<StateID>> nextStates)
 		: index{index}
 		, nextStates{nextStates}
 	{
@@ -197,19 +219,6 @@ inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
 {
 	return x.lower == y.lower && x.upper && y.upper;
 }
-
-struct Int32VectorHash
-{
-	size_t operator()(const vector<StateID>& ints) const
-	{
-		size_t hash = ints.size();
-		for (auto& i : ints)
-		{
-			hash = hash ^ (i + 0x9e3779b9 + (hash << 6) + (hash >> 2));
-		}
-		return hash;
-	}
-};
 
 class DFAMatrix
 {
@@ -225,13 +234,15 @@ public:
 };
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
-					   const UnicodePatterns& patterns,const Graph& nfaGraph, int nfaEndState);
+					   const UnicodePatterns& patterns, const Graph& nfaGraph,
+					   int nfaEndState);
 
-bool IsEndState(const vector<StateID>& index, const Graph& nfaGraph, StateID nfaEndState);
+bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
+				StateID nfaEndState);
 
 StateID RecordState(
-	unordered_map<vector<StateID>, StateID, Int32VectorHash>& stateMap,
-	const vector<StateID>& state);
+	unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
+	const std::set<StateID>& state);
 
 DFAMatrix CreateDFAMatrix(const DFA& dfaGraph);
 

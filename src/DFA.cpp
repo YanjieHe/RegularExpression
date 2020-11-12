@@ -25,7 +25,7 @@ DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 					   const UnicodePatterns& patterns, const Graph& nfaGraph,
 					   int nfaEndState)
 {
-	unordered_map<vector<StateID>, StateID, Int32VectorHash> statesID;
+	unordered_map<std::set<StateID>, StateID, StateIDSetHash> statesID;
 	DFA graph;
 	for (int i = 0; i < static_cast<int>(patterns.Size()) - 1; i++)
 	{
@@ -63,7 +63,7 @@ DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 	}
 	return graph;
 }
-bool IsEndState(const vector<StateID>& index, const Graph& nfaGraph,
+bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 				StateID nfaEndState)
 {
 	for (StateID i : index)
@@ -79,9 +79,8 @@ bool IsEndState(const vector<StateID>& index, const Graph& nfaGraph,
 	}
 	return false;
 }
-StateID RecordState(
-	unordered_map<vector<StateID>, StateID, Int32VectorHash>& stateMap,
-	const vector<StateID>& state)
+StateID RecordState(unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
+					const std::set<StateID>& state)
 {
 	if (stateMap.count(state))
 	{

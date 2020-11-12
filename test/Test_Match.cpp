@@ -6,6 +6,7 @@
 
 using std::cout;
 using std::endl;
+using namespace regex::notations;
 
 void TestMatch(string functionName, const DFAMatrix& pattern, u32string input,
 			   bool expected)

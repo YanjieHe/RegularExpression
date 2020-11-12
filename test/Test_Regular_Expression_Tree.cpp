@@ -7,6 +7,7 @@
 using std::cout;
 using std::endl;
 using std::ifstream;
+using namespace regex::notations;
 
 Json REJsonSerializer::VisitAlternation(const AlternationExpression::Ptr& exp)
 {
@@ -28,10 +29,11 @@ Json REJsonSerializer::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 }
 Json REJsonSerializer::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
+	// exp->range.rangeType -> string
 	return JsonMap(
 		{{"kind", "Symbol"},
-		 {"lower", encoding::utf32_to_utf8(u32string({exp->lower}))},
-		 {"upper", encoding::utf32_to_utf8(u32string({exp->upper}))}});
+		 {"lower", encoding::utf32_to_utf8(u32string({exp->range.lower}))},
+		 {"upper", encoding::utf32_to_utf8(u32string({exp->range.upper}))}});
 }
 
 void TestRE1()

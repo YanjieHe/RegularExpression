@@ -8,6 +8,7 @@ using std::cout;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
+using namespace regex::notations;
 
 Json DFAToJson(const DFA& dfa)
 {

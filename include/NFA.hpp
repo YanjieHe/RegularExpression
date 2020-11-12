@@ -52,8 +52,6 @@ public:
 	NFASubgraph VisitKleeneStar(const KleeneStarExpression::Ptr& exp) override;
 	NFASubgraph VisitSymbol(const SymbolExpression::Ptr& exp) override;
 
-	void CollectPatterns();
-
 	void Search(
 		int start, int node, UnicodeRange pattern,
 		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
@@ -63,9 +61,12 @@ public:
 		size_t node,
 		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
 	unordered_map<UnicodeRange, unordered_set<StateID>> ComputeRowOfNodes(
-		vector<StateID> nodes,
+		std::set<StateID> nodes,
 		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
 	vector<DFATableRow> EpsilonClosure();
+
+private:
+	void CollectPatterns();
 };
 
 } // namespace regex

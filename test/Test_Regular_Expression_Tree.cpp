@@ -15,6 +15,7 @@ Json REJsonSerializer::VisitAlternation(const AlternationExpression::Ptr& exp)
 			{"left", VisitRegularExpression(exp->left)},
 			{"right", VisitRegularExpression(exp->right)}};
 }
+
 Json REJsonSerializer::VisitConcatenation(
 	const ConcatenationExpression::Ptr& exp)
 {
@@ -22,11 +23,13 @@ Json REJsonSerializer::VisitConcatenation(
 			{"left", VisitRegularExpression(exp->left)},
 			{"right", VisitRegularExpression(exp->right)}};
 }
+
 Json REJsonSerializer::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 {
 	return {{"kind", "KleeneStar"},
 			{"inner_exp", VisitRegularExpression(exp->innerExp)}};
 }
+
 Json REJsonSerializer::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
 	// exp->range.rangeType -> string

@@ -11,6 +11,14 @@ u32string UnicodeRange::ToString() const
 	{
 		return U"ε";
 	}
+	else if (rangeType == RangeType::LineBegin)
+	{
+		return U"^";
+	}
+	else if (rangeType == RangeType::LineEnd)
+	{
+		return U"$";
+	}
 	else if (lower == upper)
 	{
 		return u32string({lower});
@@ -131,9 +139,10 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 	{
 		int state = 0;
 		int lastMatchedLength = -1;
-		for (size_t i = startIndex; i < startIndex + length; i++)
+		size_t i = startIndex;
+		while (i < startIndex + length)
 		{
-			char32_t c = str[i];
+			char32_t c = str.at(i);
 			bool matched = false;
 			if (endStates.count(state))
 			{
@@ -161,11 +170,14 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 								// move to the next state
 								state = matrix.at(state).at(j);
 								matched = true;
+								i++;
 								break;
 							}
 						}
-						if (pattern.value().rangeType == RangeType::LineBegin)
+						else if (pattern.value().rangeType ==
+								 RangeType::LineBegin)
 						{
+							std::cout << "i = " << i << std::endl;
 							if (i == startIndex)
 							{
 								// move to the next state

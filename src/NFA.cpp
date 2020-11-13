@@ -188,8 +188,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	{
 		registeredStates[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
-		cout << "pattern size - 1 = " << (static_cast<int>(patterns.Size()) - 1)
-			 << endl;
 		vector<std::set<StateID>> nextStates(static_cast<int>(patterns.Size()) -
 											 1);
 
@@ -227,7 +225,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		}
 	}
 
-	cout << "start = " << start << endl;
 	auto viewRow = [&](const DFATableRow& row)
 	{
 		cout << "index { ";
@@ -254,10 +251,10 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		}
 		cout << endl;
 	};
-	for (auto row : rows)
-	{
-		viewRow(row);
-	}
+	// for (auto row : rows)
+	// {
+	// 	viewRow(row);
+	// }
 	return rows;
 }
 

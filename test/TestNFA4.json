@@ -1,0 +1,89 @@
+{
+    "end_vertex": 11,
+    "graph": {
+        "edges": [
+            {
+                "from": 0,
+                "pattern": "[0 - 9]",
+                "to": 1
+            },
+            {
+                "from": 1,
+                "pattern": "ε",
+                "to": 3
+            },
+            {
+                "from": 2,
+                "pattern": "ε",
+                "to": 0
+            },
+            {
+                "from": 2,
+                "pattern": "ε",
+                "to": 3
+            },
+            {
+                "from": 3,
+                "pattern": "ε",
+                "to": 0
+            },
+            {
+                "from": 3,
+                "pattern": "ε",
+                "to": 11
+            },
+            {
+                "from": 4,
+                "pattern": "\u0000",
+                "to": 5
+            },
+            {
+                "from": 5,
+                "pattern": "ε",
+                "to": 8
+            },
+            {
+                "from": 6,
+                "pattern": "a",
+                "to": 7
+            },
+            {
+                "from": 7,
+                "pattern": "ε",
+                "to": 9
+            },
+            {
+                "from": 8,
+                "pattern": "ε",
+                "to": 6
+            },
+            {
+                "from": 8,
+                "pattern": "ε",
+                "to": 9
+            },
+            {
+                "from": 9,
+                "pattern": "ε",
+                "to": 6
+            },
+            {
+                "from": 9,
+                "pattern": "ε",
+                "to": 11
+            },
+            {
+                "from": 10,
+                "pattern": "ε",
+                "to": 2
+            },
+            {
+                "from": 10,
+                "pattern": "ε",
+                "to": 4
+            }
+        ],
+        "type": "Graph"
+    },
+    "start_vertex": 10
+}

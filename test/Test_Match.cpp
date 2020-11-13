@@ -53,3 +53,11 @@ void TestMatch3()
 	TestMatch(__FUNCTION__, matrix3, U"aaa38a812a", true);
 	TestMatch(__FUNCTION__, matrix3, U"aa122bb23a", false);
 }
+void TestMatch4()
+{
+	auto e4 = (Range(U'0', U'9')->Many() | (LineBegin() + Symbol(U'a')->Many()));
+	auto matrix4 = e4->Compile();
+	TestMatch(__FUNCTION__, matrix4, U"123ab", false);
+	TestMatch(__FUNCTION__, matrix4, U"aaa", true);
+	TestMatch(__FUNCTION__, matrix4, U"123", true);
+}

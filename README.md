@@ -42,3 +42,16 @@ auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 
 ### DFA
 ![DFA3.png](docs/images/DFA3.png)
+
+### Expression
+
+```
+auto e4 = (Range(U'0', U'9')->Many() | (LineBegin() + Symbol(U'a')->Many()));
+```
+
+### NFA
+
+![NFA4.png](docs/images/NFA4.png)
+
+### DFA
+![DFA4.png](docs/images/DFA4.png)

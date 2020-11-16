@@ -7,20 +7,30 @@ namespace regex
 
 u32string UnicodeRange::ToString() const
 {
-	if (lower == EPSILON && upper == EPSILON)
+	if (IsEpsilon())
 	{
 		return U"ε";
 	}
+	else if (rangeType == RangeType::LineBegin)
+	{
+		return U"^";
+	}
+	else if (rangeType == RangeType::LineEnd)
+	{
+		return U"$";
+	}
 	else if (lower == upper)
 	{
-		return u32string({static_cast<char32_t>(lower)});
+		return u32string({lower});
 	}
 	else
 	{
-		return u32string(U"[") + static_cast<char32_t>(lower) + U" - " +
-			   static_cast<char32_t>(upper) + U"]";
+		return U"[" + u32string({lower}) + U" - " + u32string({upper}) + U"]";
 	}
 }
+
+UnicodeRange UnicodeRange::EPSILON = UnicodeRange();
+
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 					   const UnicodePatterns& patterns, const Graph& nfaGraph,
 					   int nfaEndState)
@@ -79,8 +89,9 @@ bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 	}
 	return false;
 }
-StateID RecordState(unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
-					const std::set<StateID>& state)
+StateID RecordState(
+	unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
+	const std::set<StateID>& state)
 {
 	if (stateMap.count(state))
 	{
@@ -95,7 +106,8 @@ StateID RecordState(unordered_map<std::set<StateID>, StateID, StateIDSetHash>& s
 }
 bool DFAMatrix::Match(const u32string& str) const
 {
-	return MatchFromBeginning(str, 0, true) == static_cast<int>(str.size());
+	return MatchFromBeginning(str, 0, str.size(), true) ==
+		   static_cast<int>(str.size());
 }
 
 int DFAMatrix::Find(const u32string& str) const
@@ -104,7 +116,8 @@ int DFAMatrix::Find(const u32string& str) const
 	{
 		for (size_t start = 0; start < str.size(); start++)
 		{
-			int length = MatchFromBeginning(str, start, false);
+			int length =
+				MatchFromBeginning(str, start, str.size() - start, false);
 			if (length != -1)
 			{
 				return start;
@@ -119,15 +132,16 @@ int DFAMatrix::Find(const u32string& str) const
 }
 
 int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
-								  bool greedyMode) const
+								  size_t length, bool greedyMode) const
 {
 	if (matrix.size() > 0)
 	{
 		int state = 0;
 		int lastMatchedLength = -1;
-		for (size_t i = startIndex; i < str.size(); i++)
+		size_t i = startIndex;
+		while (i < startIndex + length)
 		{
-			char32_t c = str[i];
+			char32_t c = str.at(i);
 			bool matched = false;
 			if (endStates.count(state))
 			{
@@ -147,12 +161,39 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 					if (auto pattern =
 							patterns.GetPatternByID(static_cast<int>(j)))
 					{
-						if (pattern.value().InBetween(c))
+						if (pattern.value().rangeType ==
+							RangeType::CharacterRange)
 						{
-							// move to the next state
-							state = matrix.at(state).at(j);
-							matched = true;
-							break;
+							if (pattern.value().InBetween(c))
+							{
+								// move to the next state
+								state = matrix.at(state).at(j);
+								matched = true;
+								i++;
+								break;
+							}
+						}
+						else if (pattern.value().rangeType ==
+								 RangeType::LineBegin)
+						{
+							if (i == startIndex)
+							{
+								// move to the next state
+								state = matrix.at(state).at(j);
+								matched = true;
+								break;
+							}
+						}
+						else if (pattern.value().rangeType ==
+								 RangeType::LineEnd)
+						{
+							if (i + 1 == startIndex + length)
+							{
+								// move to the next state
+								state = matrix.at(state).at(j);
+								matched = true;
+								break;
+							}
 						}
 					}
 				}

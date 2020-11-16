@@ -11,41 +11,54 @@ namespace regex
 using std::u32string;
 static const int EPSILON = -1;
 using StateID = size_t;
+
 enum class RangeType
 {
 	Epsilon,
-	LineStart,
+	LineBegin,
 	LineEnd,
-	WordStart,
+	WordBegin,
 	WordEnd,
 	CharacterRange
 };
+
 struct UnicodeRange
 {
-	int32_t lower;
-	int32_t upper;
+	RangeType rangeType;
+	char32_t lower;
+	char32_t upper;
 
 	UnicodeRange()
-		: lower{EPSILON}
-		, upper{EPSILON}
+		: rangeType{RangeType::Epsilon}
+		, lower{0}
+		, upper{0}
 	{
 	}
-	UnicodeRange(int32_t lower, int32_t upper)
-		: lower{lower}
+	UnicodeRange(RangeType rangeType, char32_t lower, char32_t upper)
+		: rangeType{rangeType}
+		, lower{lower}
 		, upper{upper}
 	{
 	}
 
 	bool IsEpsilon() const
 	{
-		return lower == EPSILON && upper == EPSILON;
+		return rangeType == RangeType::Epsilon;
 	}
 	bool InBetween(char32_t c) const
 	{
-		return lower <= static_cast<int32_t>(c) &&
-			   static_cast<int32_t>(c) <= upper;
+		if (rangeType != RangeType::Epsilon)
+		{
+			return lower <= c && c <= upper;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	u32string ToString() const;
+
+	static UnicodeRange EPSILON;
 };
 } // namespace regex
 
@@ -54,9 +67,10 @@ struct std::hash<regex::UnicodeRange>
 {
 	size_t operator()(const regex::UnicodeRange& pattern) const noexcept
 	{
-		size_t h1 = static_cast<size_t>(pattern.lower);
-		size_t h2 = static_cast<size_t>(pattern.upper);
-		return h1 ^ (h2 << 1);
+		size_t h1 = static_cast<size_t>(pattern.rangeType);
+		size_t h2 = static_cast<size_t>(pattern.lower);
+		size_t h3 = static_cast<size_t>(pattern.upper);
+		return h1 ^ (h2 << 1) ^ (h3 << 1);
 	}
 };
 
@@ -120,7 +134,7 @@ public:
 	Edge()
 		: from{0}
 		, to{0}
-		, pattern{UnicodeRange(EPSILON, EPSILON)}
+		, pattern{}
 	{
 	}
 	Edge(StateID from, StateID to, UnicodeRange pattern)
@@ -217,7 +231,8 @@ public:
 
 inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
 {
-	return x.lower == y.lower && x.upper && y.upper;
+	return x.rangeType == y.rangeType && x.lower == y.lower &&
+		   x.upper == y.upper;
 }
 
 class DFAMatrix
@@ -230,7 +245,7 @@ public:
 	bool Match(const u32string& str) const;
 	int Find(const u32string& str) const;
 	int MatchFromBeginning(const u32string& str, size_t startIndex,
-						   bool greedyMode) const;
+						   size_t length, bool greedyMode) const;
 };
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,

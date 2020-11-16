@@ -8,5 +8,6 @@ void TestMatch(string functionName, const DFAMatrix& pattern, u32string input, b
 void TestMatch1();
 void TestMatch2();
 void TestMatch3();
+void TestMatch4();
 
 #endif // TEST_MATCH_HPP

@@ -56,9 +56,8 @@ RegularExpressionKind KleeneStarExpression::Kind() const
 	return RegularExpressionKind::KleeneStar;
 }
 
-SymbolExpression::SymbolExpression(char32_t lower, char32_t upper)
-	: lower{lower}
-	, upper{upper}
+SymbolExpression::SymbolExpression(UnicodeRange range)
+	: range{range}
 {
 }
 
@@ -67,6 +66,8 @@ RegularExpressionKind SymbolExpression::Kind() const
 	return RegularExpressionKind::Symbol;
 }
 
+namespace notations
+{
 RegularExpression::Ptr operator|(const RegularExpression::Ptr& x,
 								 const RegularExpression::Ptr& y)
 {
@@ -79,7 +80,8 @@ RegularExpression::Ptr operator+(const RegularExpression::Ptr& x,
 }
 RegularExpression::Ptr Symbol(char32_t c)
 {
-	return make_shared<SymbolExpression>(c, c);
+	return make_shared<SymbolExpression>(
+		UnicodeRange(RangeType::CharacterRange, c, c));
 }
 RegularExpression::Ptr Literal(const u32string& text)
 {
@@ -101,6 +103,18 @@ RegularExpression::Ptr Literal(const u32string& text)
 }
 RegularExpression::Ptr Range(char32_t lower, char32_t upper)
 {
-	return make_shared<SymbolExpression>(lower, upper);
+	return make_shared<SymbolExpression>(
+		UnicodeRange(RangeType::CharacterRange, lower, upper));
 }
+RegularExpression::Ptr LineBegin()
+{
+	return make_shared<SymbolExpression>(
+		UnicodeRange(RangeType::LineBegin, char32_t{0}, char32_t{0}));
+}
+RegularExpression::Ptr LineEnd()
+{
+	return make_shared<SymbolExpression>(
+		UnicodeRange(RangeType::LineEnd, char32_t{0}, char32_t{0}));
+}
+} // namespace notations
 } // namespace regex

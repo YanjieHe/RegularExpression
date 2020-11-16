@@ -7,31 +7,35 @@
 using std::cout;
 using std::endl;
 using std::ifstream;
+using namespace regex::notations;
 
 Json REJsonSerializer::VisitAlternation(const AlternationExpression::Ptr& exp)
 {
-	return JsonMap({{"kind", "Alternation"},
-					{"left", VisitRegularExpression(exp->left)},
-					{"right", VisitRegularExpression(exp->right)}});
+	return {{"kind", "Alternation"},
+			{"left", VisitRegularExpression(exp->left)},
+			{"right", VisitRegularExpression(exp->right)}};
 }
+
 Json REJsonSerializer::VisitConcatenation(
 	const ConcatenationExpression::Ptr& exp)
 {
-	return JsonMap({{"kind", "Concatenation"},
-					{"left", VisitRegularExpression(exp->left)},
-					{"right", VisitRegularExpression(exp->right)}});
+	return {{"kind", "Concatenation"},
+			{"left", VisitRegularExpression(exp->left)},
+			{"right", VisitRegularExpression(exp->right)}};
 }
+
 Json REJsonSerializer::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 {
-	return JsonMap({{"kind", "KleeneStar"},
-					{"inner_exp", VisitRegularExpression(exp->innerExp)}});
+	return {{"kind", "KleeneStar"},
+			{"inner_exp", VisitRegularExpression(exp->innerExp)}};
 }
+
 Json REJsonSerializer::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
-	return JsonMap(
-		{{"kind", "Symbol"},
-		 {"lower", encoding::utf32_to_utf8(u32string({exp->lower}))},
-		 {"upper", encoding::utf32_to_utf8(u32string({exp->upper}))}});
+	// exp->range.rangeType -> string
+	return {{"kind", "Symbol"},
+			{"lower", encoding::utf32_to_utf8(u32string({exp->range.lower}))},
+			{"upper", encoding::utf32_to_utf8(u32string({exp->range.upper}))}};
 }
 
 void TestRE1()

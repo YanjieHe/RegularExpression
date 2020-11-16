@@ -80,9 +80,8 @@ class SymbolExpression : public RegularExpression
 public:
 	typedef shared_ptr<SymbolExpression> Ptr;
 
-	char32_t lower; // included
-	char32_t upper; // included
-	SymbolExpression(char32_t lower, char32_t upper);
+	UnicodeRange range;
+	explicit SymbolExpression(UnicodeRange range);
 	RegularExpressionKind Kind() const override;
 };
 
@@ -133,6 +132,8 @@ public:
 								   ArgTypes... args) = 0;
 };
 
+namespace notations
+{
 RegularExpression::Ptr operator|(const RegularExpression::Ptr& x,
 								 const RegularExpression::Ptr& y);
 RegularExpression::Ptr operator+(const RegularExpression::Ptr& x,
@@ -141,6 +142,9 @@ RegularExpression::Ptr operator+(const RegularExpression::Ptr& x,
 RegularExpression::Ptr Symbol(char32_t c);
 RegularExpression::Ptr Literal(const u32string& text);
 RegularExpression::Ptr Range(char32_t lower, char32_t upper);
+RegularExpression::Ptr LineBegin();
+RegularExpression::Ptr LineEnd();
+} // namespace notations
 
 } // namespace regex
 #endif /* REGULAREXPRESSION_HPP */

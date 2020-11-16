@@ -16,14 +16,17 @@ int main()
 	TestNFA1();
 	TestNFA2();
 	TestNFA3();
+	TestNFA4();
 
 	TestDFA1();
 	TestDFA2();
 	TestDFA3();
+	TestDFA4();
 
 	TestMatch1();
 	TestMatch2();
 	TestMatch3();
+	TestMatch4();
 
 	return 0;
 }

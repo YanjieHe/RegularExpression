@@ -32,19 +32,17 @@ NFASubgraph NFA::VisitAlternation(const AlternationExpression::Ptr& exp)
 	NFASubgraph graph2 = VisitRegularExpression(exp->right);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	auto eps = UnicodeRange(EPSILON, EPSILON);
-	G.AddEdge(Edge(in, graph1.start, eps));
-	G.AddEdge(Edge(in, graph2.start, eps));
-	G.AddEdge(Edge(graph1.end, out, eps));
-	G.AddEdge(Edge(graph2.end, out, eps));
+	G.AddEdge(Edge(in, graph1.start, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(in, graph2.start, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(graph1.end, out, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(graph2.end, out, UnicodeRange::EPSILON));
 	return NFASubgraph(in, out);
 }
 NFASubgraph NFA::VisitConcatenation(const ConcatenationExpression::Ptr& exp)
 {
 	NFASubgraph src = VisitRegularExpression(exp->left);
 	NFASubgraph dest = VisitRegularExpression(exp->right);
-	auto eps = UnicodeRange(EPSILON, EPSILON);
-	G.AddEdge(Edge(src.end, dest.start, eps));
+	G.AddEdge(Edge(src.end, dest.start, UnicodeRange::EPSILON));
 	return NFASubgraph(src.start, dest.end);
 }
 NFASubgraph NFA::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
@@ -52,25 +50,24 @@ NFASubgraph NFA::VisitKleeneStar(const KleeneStarExpression::Ptr& exp)
 	NFASubgraph graph = VisitRegularExpression(exp->innerExp);
 	int in = G.AddNode();
 	int out = G.AddNode();
-	auto eps = UnicodeRange(EPSILON, EPSILON);
-	G.AddEdge(Edge(in, graph.start, eps));
-	G.AddEdge(Edge(out, graph.start, eps));
-	G.AddEdge(Edge(graph.end, out, eps));
-	G.AddEdge(Edge(in, out, eps));
+	G.AddEdge(Edge(in, graph.start, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(out, graph.start, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(graph.end, out, UnicodeRange::EPSILON));
+	G.AddEdge(Edge(in, out, UnicodeRange::EPSILON));
 	return NFASubgraph(in, out);
 }
 NFASubgraph NFA::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
 	int start = G.AddNode();
 	int end = G.AddNode();
-	UnicodeRange pattern(exp->lower, exp->upper);
+	UnicodeRange pattern = exp->range;
 	G.AddEdge(Edge(start, end, pattern));
 	return NFASubgraph(start, end);
 }
 
 void NFA::CollectPatterns()
 {
-	patterns.Add(UnicodeRange(EPSILON, EPSILON), EPSILON);
+	patterns.Add(UnicodeRange::EPSILON, EPSILON);
 	for (auto edge : G.GetEdges())
 	{
 		if (!patterns.GetIDByPattern(edge.pattern))
@@ -120,8 +117,7 @@ unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
 	size_t node,
 	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
 {
-	auto eps = UnicodeRange(EPSILON, EPSILON);
-	auto epsilonNextStates = table[node][eps];
+	auto epsilonNextStates = table[node][UnicodeRange::EPSILON];
 	unordered_map<UnicodeRange, unordered_set<StateID>> nextStatesMap;
 	for (auto[patternID, nextStates] : table[node])
 	{
@@ -164,7 +160,7 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	for (size_t node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);
-		Search(node, node, UnicodeRange(EPSILON, EPSILON), table, visited);
+		Search(node, node, UnicodeRange::EPSILON, table, visited);
 	}
 	using namespace std;
 
@@ -192,8 +188,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	{
 		registeredStates[index] = true;
 		auto nextStatesMap = ComputeRowOfNodes(index, table);
-		cout << "pattern size - 1 = " << (static_cast<int>(patterns.Size()) - 1)
-			 << endl;
 		vector<std::set<StateID>> nextStates(static_cast<int>(patterns.Size()) -
 											 1);
 
@@ -231,7 +225,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		}
 	}
 
-	cout << "start = " << start << endl;
 	auto viewRow = [&](const DFATableRow& row)
 	{
 		cout << "index { ";
@@ -258,10 +251,10 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		}
 		cout << endl;
 	};
-	for (auto row : rows)
-	{
-		viewRow(row);
-	}
+	// for (auto row : rows)
+	// {
+	// 	viewRow(row);
+	// }
 	return rows;
 }
 

@@ -29,8 +29,7 @@ u32string UnicodeRange::ToString() const
 	}
 }
 
-UnicodeRange UnicodeRange::EPSILON =
-	UnicodeRange(RangeType::Epsilon, char32_t{}, char32_t{});
+UnicodeRange UnicodeRange::EPSILON = UnicodeRange();
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
 					   const UnicodePatterns& patterns, const Graph& nfaGraph,
@@ -177,7 +176,6 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 						else if (pattern.value().rangeType ==
 								 RangeType::LineBegin)
 						{
-							std::cout << "i = " << i << std::endl;
 							if (i == startIndex)
 							{
 								// move to the next state

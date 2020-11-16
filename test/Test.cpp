@@ -21,6 +21,7 @@ int main()
 	TestDFA1();
 	TestDFA2();
 	TestDFA3();
+	TestDFA4();
 
 	TestMatch1();
 	TestMatch2();

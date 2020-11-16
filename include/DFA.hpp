@@ -231,8 +231,8 @@ public:
 
 inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
 {
-	return x.rangeType == y.rangeType && x.lower == y.lower && x.upper &&
-		   y.upper;
+	return x.rangeType == y.rangeType && x.lower == y.lower &&
+		   x.upper == y.upper;
 }
 
 class DFAMatrix
@@ -244,8 +244,8 @@ public:
 
 	bool Match(const u32string& str) const;
 	int Find(const u32string& str) const;
-	int MatchFromBeginning(const u32string& str, size_t startIndex,size_t length,
-						   bool greedyMode) const;
+	int MatchFromBeginning(const u32string& str, size_t startIndex,
+						   size_t length, bool greedyMode) const;
 };
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,

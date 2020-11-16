@@ -109,12 +109,12 @@ RegularExpression::Ptr Range(char32_t lower, char32_t upper)
 RegularExpression::Ptr LineBegin()
 {
 	return make_shared<SymbolExpression>(
-		UnicodeRange(RangeType::LineBegin, char32_t{}, char32_t{}));
+		UnicodeRange(RangeType::LineBegin, char32_t{0}, char32_t{0}));
 }
 RegularExpression::Ptr LineEnd()
 {
 	return make_shared<SymbolExpression>(
-		UnicodeRange(RangeType::LineEnd, char32_t{}, char32_t{}));
+		UnicodeRange(RangeType::LineEnd, char32_t{0}, char32_t{0}));
 }
 } // namespace notations
 } // namespace regex

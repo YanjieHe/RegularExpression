@@ -124,3 +124,21 @@ void TestDFA3()
 								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
 		 << endl;
 }
+
+void TestDFA4()
+{
+	auto e4 =
+		(Range(U'0', U'9')->Many() | (LineBegin() + Symbol(U'a')->Many()));
+	NFA nfa(e4);
+	auto dfaTable = nfa.EpsilonClosure();
+	auto dfa = DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+	DFAToDotFile(dfa, "DFA4.dot");
+	auto actual = DFAToJson(dfa);
+	Json expected;
+	ifstream stream("../test/TestDFA4.json");
+	stream >> expected;
+	cout << __FUNCTION__ << " "
+		 << ((actual == expected) ? "passed!"
+								  : "failed! <<<<<<<<<<<<<<<<<<<<<<<")
+		 << endl;
+}

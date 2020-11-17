@@ -11,7 +11,7 @@ using namespace regex::notations;
 void TestMatch(string functionName, const DFAMatrix& pattern, u32string input,
 			   bool expected)
 {
-	bool actual = pattern.Match(input);
+	bool actual = pattern.FullMatch(input);
 	cout << functionName << " ";
 	if (actual == expected)
 	{

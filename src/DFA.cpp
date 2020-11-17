@@ -104,20 +104,18 @@ StateID RecordState(
 		return n;
 	}
 }
-bool DFAMatrix::Match(const u32string& str) const
+bool DFAMatrix::FullMatch(const u32string& str) const
 {
-	return MatchFromBeginning(str, 0, str.size(), true) ==
-		   static_cast<int>(str.size());
+	return Match(str, 0, str.size(), true) == static_cast<int>(str.size());
 }
 
-int DFAMatrix::Find(const u32string& str) const
+int DFAMatrix::Search(const u32string& str) const
 {
 	if (matrix.size() > 0)
 	{
 		for (size_t start = 0; start < str.size(); start++)
 		{
-			int length =
-				MatchFromBeginning(str, start, str.size() - start, false);
+			int length = Match(str, start, str.size(), false);
 			if (length != -1)
 			{
 				return start;
@@ -131,15 +129,15 @@ int DFAMatrix::Find(const u32string& str) const
 	}
 }
 
-int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
-								  size_t length, bool greedyMode) const
+int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
+					 bool greedyMode) const
 {
 	if (matrix.size() > 0)
 	{
 		int state = 0;
 		int lastMatchedLength = -1;
-		size_t i = startIndex;
-		while (i < startIndex + length)
+		size_t i = startPos;
+		while (i < endPos)
 		{
 			char32_t c = str.at(i);
 			bool matched = false;
@@ -176,7 +174,7 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 						else if (pattern.value().rangeType ==
 								 RangeType::LineBegin)
 						{
-							if (i == startIndex)
+							if (i == startPos)
 							{
 								// move to the next state
 								state = matrix.at(state).at(j);
@@ -187,7 +185,7 @@ int DFAMatrix::MatchFromBeginning(const u32string& str, size_t startIndex,
 						else if (pattern.value().rangeType ==
 								 RangeType::LineEnd)
 						{
-							if (i + 1 == startIndex + length)
+							if (i + 1 == endPos)
 							{
 								// move to the next state
 								state = matrix.at(state).at(j);

@@ -242,10 +242,10 @@ public:
 	UnicodePatterns patterns;
 	unordered_set<StateID> endStates;
 
-	bool Match(const u32string& str) const;
-	int Find(const u32string& str) const;
-	int MatchFromBeginning(const u32string& str, size_t startIndex,
-						   size_t length, bool greedyMode) const;
+	bool FullMatch(const u32string& str) const;
+	int Search(const u32string& str) const;
+	int Match(const u32string& str, size_t startPos, size_t endPos,
+			  bool greedyMode) const;
 };
 
 DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,

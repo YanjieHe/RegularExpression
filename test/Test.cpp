@@ -4,9 +4,6 @@
 #include "Test_Match.hpp"
 #include <iostream>
 
-using std::cout;
-using std::endl;
-
 int main()
 {
 	TestRE1();
@@ -27,6 +24,5 @@ int main()
 	TestMatch2();
 	TestMatch3();
 	TestMatch4();
-
 	return 0;
 }

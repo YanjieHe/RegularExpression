@@ -4,7 +4,6 @@
 
 namespace regex
 {
-
 u32string UnicodeRange::ToString() const
 {
 	if (IsEpsilon())

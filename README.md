@@ -1,4 +1,4 @@
-# RegularExpression
+# A DFA-based Regular Expression Library
 
 ## Examples
 

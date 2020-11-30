@@ -1,4 +1,4 @@
-# A DFA-based Regular Expression Library
+# A DFA-based Regular Expression Library for C++
 
 ## Examples
 

@@ -1,7 +1,8 @@
-#ifndef TEST_REGULAR_EXPRESSION_TREE_HPP
-#define TEST_REGULAR_EXPRESSION_TREE_HPP
+#ifndef RE_JSON_SERIALIZER_HPP
+#define RE_JSON_SERIALIZER_HPP
 #include <nlohmann/json.hpp>
 #include "RegularExpression.hpp"
+#include "NFA.hpp"
 
 using namespace regex;
 using std::string;
@@ -17,8 +18,17 @@ public:
 	virtual Json VisitSymbol(const SymbolExpression::Ptr& exp);
 };
 
-void TestRE1();
-void TestRE2();
-void TestRE3();
+Json NFAToJson(const NFA& nfa);
 
-#endif // TEST_REGULAR_EXPRESSION_TREE_HPP
+Json GraphToJson(const Graph& graph);
+
+Json EdgeToJson(const Edge& edge);
+
+void NFAToDotFile(const NFA& nfa, string path);
+
+Json DFAToJson(const DFA& dfa);
+
+Json DFATableToJson(const vector<DFATableRow>& rows);
+
+void DFAToDotFile(const DFA& dfa, string path);
+#endif // RE_JSON_SERIALIZER_HPP

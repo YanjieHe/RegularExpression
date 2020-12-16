@@ -68,6 +68,7 @@ public:
 private:
 	void CollectPatterns();
 };
+void ViewRow();
 
 } // namespace regex
 #endif // NFA_HPP

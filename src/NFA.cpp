@@ -178,11 +178,10 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	// 		cout << " }" << endl;
 	// 	}
 	// }
-	size_t start = this->startVertex;
 	vector<DFATableRow> rows;
 
 	unordered_map<std::set<StateID>, bool, StateIDSetHash> registeredStates;
-	std::set<StateID> index = {start};
+	std::set<StateID> index = {startVertex};
 	bool allVisited = false;
 	while (!allVisited)
 	{
@@ -224,38 +223,34 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			}
 		}
 	}
+	return rows;
+}
 
-	auto viewRow = [&](const DFATableRow& row)
+void ViewRow(const DFATableRow& row, const UnicodePatterns& patterns)
+{
+	cout << "index { ";
+	for (auto item : row.index)
 	{
-		cout << "index { ";
-		for (auto item : row.index)
+		cout << item << " ";
+	}
+	cout << "} ";
+	for (size_t i = 0; i < row.nextStates.size(); i++)
+	{
+		auto state = row.nextStates.at(i);
+		cout << "STATE ";
+		if (auto pattern = patterns.GetPatternByID(i))
+		{
+			cout << encoding::utf32_to_utf8(pattern.value().ToString());
+		}
+		cout << " ";
+		cout << "{";
+		for (auto item : state)
 		{
 			cout << item << " ";
 		}
 		cout << "} ";
-		for (size_t i = 0; i < row.nextStates.size(); i++)
-		{
-			auto state = row.nextStates.at(i);
-			cout << "STATE ";
-			if (auto pattern = patterns.GetPatternByID(i))
-			{
-				cout << encoding::utf32_to_utf8(pattern.value().ToString());
-			}
-			cout << " ";
-			cout << "{";
-			for (auto item : state)
-			{
-				cout << item << " ";
-			}
-			cout << "} ";
-		}
-		cout << endl;
-	};
-	// for (auto row : rows)
-	// {
-	// 	viewRow(row);
-	// }
-	return rows;
-}
+	}
+	cout << endl;
+};
 
 } // namespace regex

@@ -11,7 +11,7 @@ u32string UnicodeRange::ToString() const
 		return U"ε";
 	}
 	else if (rangeType == RangeType::LineBegin)
-	{
+{
 		return U"^";
 	}
 	else if (rangeType == RangeType::LineEnd)

@@ -12,13 +12,14 @@ using namespace regex::notations;
 
 TEST_CASE("test regaulr expression syntax tree", "[RegularExpression]")
 {
+	string folder = "../test/json/";
 	SECTION("regular expression 1")
 	{
 		auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 		REJsonSerializer serializer;
 		auto actual = serializer.VisitRegularExpression(e1);
 		Json expected;
-		ifstream stream("../test/TestRE1.json");
+		ifstream stream(folder + "TestRE1.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -29,7 +30,7 @@ TEST_CASE("test regaulr expression syntax tree", "[RegularExpression]")
 		REJsonSerializer serializer;
 		auto actual = serializer.VisitRegularExpression(e2);
 		Json expected;
-		ifstream stream("../test/TestRE2.json");
+		ifstream stream(folder + "TestRE2.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -40,9 +41,9 @@ TEST_CASE("test regaulr expression syntax tree", "[RegularExpression]")
 		REJsonSerializer serializer;
 		auto actual = serializer.VisitRegularExpression(e3);
 		Json expected;
-		ifstream stream("../test/TestRE3.json");
+		ifstream stream(folder + "TestRE3.json");
 		stream >> expected;
-		
+
 		REQUIRE(actual == expected);
 	}
 }

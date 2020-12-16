@@ -38,6 +38,9 @@ public:
 class NFA : public RegularExpressionVisitor<NFASubgraph>
 {
 public:
+	typedef unordered_map<UnicodeRange, unordered_set<StateID>> Row;
+	typedef vector<Row> Table;
+
 	Graph G;
 	UnicodePatterns patterns;
 	size_t startVertex;
@@ -52,22 +55,17 @@ public:
 	NFASubgraph VisitKleeneStar(const KleeneStarExpression::Ptr& exp) override;
 	NFASubgraph VisitSymbol(const SymbolExpression::Ptr& exp) override;
 
-	void Search(
-		int start, int node, UnicodeRange pattern,
-		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
-		vector<bool>& visited);
+	void FindNextStates(int start, int vertex, UnicodeRange pattern,
+						Table& table, vector<bool>& visited);
 
-	unordered_map<UnicodeRange, unordered_set<StateID>> ComputeRow(
-		size_t node,
-		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
-	unordered_map<UnicodeRange, unordered_set<StateID>> ComputeRowOfNodes(
-		std::set<StateID> nodes,
-		vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table);
+	Row ComputeNextRow(size_t vertex, Table& table);
+	Row ComputeVerticesNextRow(std::set<StateID> vertices, Table& table);
 	vector<DFATableRow> EpsilonClosure();
 
 private:
 	void CollectPatterns();
 };
+void ViewRow();
 
 } // namespace regex
 #endif // NFA_HPP

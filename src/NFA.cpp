@@ -77,25 +77,28 @@ void NFA::CollectPatterns()
 		}
 	}
 }
-
-void NFA::Search(
-	int start, int node, UnicodeRange pattern,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
-	vector<bool>& visited)
+/**
+ * NFA
+ *
+ * @param  {int} start            : start vertex id
+ * @param  {int} vertex           : current vertex id
+ * @param  {UnicodeRange} pattern : current unicode pattern
+ * @param  {NFA::Table} table     : the table for recording next states after
+ * transitions
+ * @param  {vector<bool>} visited : keep track of visited vertices
+ */
+void NFA::FindNextStates(int start, int vertex, UnicodeRange pattern,
+						 NFA::Table& table, vector<bool>& visited)
 {
-	if (visited.at(node))
+	if (!visited.at(vertex))
 	{
-		return;
-	}
-	else
-	{
-		visited.at(node) = true;
-		for (const auto& adjEdge : G.Adj(node))
+		visited.at(vertex) = true;
+		for (const auto& adjEdge : G.Adj(vertex))
 		{
 			if (adjEdge.pattern.IsEpsilon() && !pattern.IsEpsilon())
 			{
 				table[start][pattern].insert(adjEdge.to);
-				Search(start, adjEdge.to, pattern, table, visited);
+				FindNextStates(start, adjEdge.to, pattern, table, visited);
 			}
 			else if (pattern.IsEpsilon())
 			{
@@ -103,7 +106,8 @@ void NFA::Search(
 				{
 					table[start][adjEdge.pattern].insert(adjEdge.to);
 				}
-				Search(start, adjEdge.to, adjEdge.pattern, table, visited);
+				FindNextStates(start, adjEdge.to, adjEdge.pattern, table,
+							   visited);
 			}
 			else
 			{
@@ -111,56 +115,64 @@ void NFA::Search(
 			}
 		}
 	}
+	else
+	{
+		// the program has already visited the current vertex
+	}
 }
-
-unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
-	size_t node,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
+/**
+ * NFA
+ *
+ * @param  {size_t} vertex    : current vertex
+ * @param  {NFA::Table} table : the table for recording next states after
+ * transitions
+ * @return {NFA::Row}         : next row containing states after transitions
+ */
+NFA::Row NFA::ComputeNextRow(size_t vertex, NFA::Table& table)
 {
-	auto epsilonNextStates = table[node][UnicodeRange::EPSILON];
-	unordered_map<UnicodeRange, unordered_set<StateID>> nextStatesMap;
-	for (auto[patternID, nextStates] : table[node])
+	auto epsilonNextStates = table[vertex][UnicodeRange::EPSILON];
+	Row nextRow;
+	for (auto[patternID, nextStates] : table[vertex])
 	{
 		if (!patternID.IsEpsilon())
 		{
-			nextStatesMap[patternID] = nextStates;
+			nextRow[patternID] = nextStates;
 			// a -> aε*
 			for (auto nextState : epsilonNextStates)
 			{
-				nextStatesMap[patternID].insert(nextState);
+				nextRow[patternID].insert(nextState);
 			}
 		}
 	}
-	return nextStatesMap;
+	return nextRow;
 }
 
-unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRowOfNodes(
-	std::set<StateID> nodes,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
+NFA::Row NFA::ComputeVerticesNextRow(std::set<StateID> vertices,
+									 NFA::Table& table)
 {
-	unordered_map<UnicodeRange, unordered_set<StateID>> nodeStates;
-	for (auto node : nodes)
+	Row verticesNextRow;
+	for (auto vertex : vertices)
 	{
-		auto result = ComputeRow(node, table);
-		for (auto[nodeIndex, stateSet] : result)
+		auto nextRow = ComputeNextRow(vertex, table);
+		for (auto[vertexIndex, stateSet] : nextRow)
 		{
 			for (auto state : stateSet)
 			{
-				nodeStates[nodeIndex].insert(state);
+				verticesNextRow[vertexIndex].insert(state);
 			}
 		}
 	}
-	return nodeStates;
+	return verticesNextRow;
 }
 
 vector<DFATableRow> NFA::EpsilonClosure()
 {
 	size_t N = G.NodeCount();
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>> table(N);
+	Table table(N);
 	for (size_t node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);
-		Search(node, node, UnicodeRange::EPSILON, table, visited);
+		FindNextStates(node, node, UnicodeRange::EPSILON, table, visited);
 	}
 	using namespace std;
 
@@ -178,16 +190,15 @@ vector<DFATableRow> NFA::EpsilonClosure()
 	// 		cout << " }" << endl;
 	// 	}
 	// }
-	size_t start = this->startVertex;
 	vector<DFATableRow> rows;
 
 	unordered_map<std::set<StateID>, bool, StateIDSetHash> registeredStates;
-	std::set<StateID> index = {start};
+	std::set<StateID> index = {startVertex};
 	bool allVisited = false;
 	while (!allVisited)
 	{
 		registeredStates[index] = true;
-		auto nextStatesMap = ComputeRowOfNodes(index, table);
+		auto nextStatesMap = ComputeVerticesNextRow(index, table);
 		vector<std::set<StateID>> nextStates(static_cast<int>(patterns.Size()) -
 											 1);
 
@@ -224,38 +235,34 @@ vector<DFATableRow> NFA::EpsilonClosure()
 			}
 		}
 	}
+	return rows;
+}
 
-	auto viewRow = [&](const DFATableRow& row)
+void ViewRow(const DFATableRow& row, const UnicodePatterns& patterns)
+{
+	cout << "index { ";
+	for (auto item : row.index)
 	{
-		cout << "index { ";
-		for (auto item : row.index)
+		cout << item << " ";
+	}
+	cout << "} ";
+	for (size_t i = 0; i < row.nextStates.size(); i++)
+	{
+		auto state = row.nextStates.at(i);
+		cout << "STATE ";
+		if (auto pattern = patterns.GetPatternByID(i))
+		{
+			cout << encoding::utf32_to_utf8(pattern.value().ToString());
+		}
+		cout << " ";
+		cout << "{";
+		for (auto item : state)
 		{
 			cout << item << " ";
 		}
 		cout << "} ";
-		for (size_t i = 0; i < row.nextStates.size(); i++)
-		{
-			auto state = row.nextStates.at(i);
-			cout << "STATE ";
-			if (auto pattern = patterns.GetPatternByID(i))
-			{
-				cout << encoding::utf32_to_utf8(pattern.value().ToString());
-			}
-			cout << " ";
-			cout << "{";
-			for (auto item : state)
-			{
-				cout << item << " ";
-			}
-			cout << "} ";
-		}
-		cout << endl;
-	};
-	// for (auto row : rows)
-	// {
-	// 	viewRow(row);
-	// }
-	return rows;
-}
+	}
+	cout << endl;
+};
 
 } // namespace regex

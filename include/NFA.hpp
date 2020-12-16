@@ -40,6 +40,7 @@ class NFA : public RegularExpressionVisitor<NFASubgraph>
 public:
 	typedef unordered_map<UnicodeRange, unordered_set<StateID>> Row;
 	typedef vector<Row> Table;
+
 	Graph G;
 	UnicodePatterns patterns;
 	size_t startVertex;
@@ -54,11 +55,11 @@ public:
 	NFASubgraph VisitKleeneStar(const KleeneStarExpression::Ptr& exp) override;
 	NFASubgraph VisitSymbol(const SymbolExpression::Ptr& exp) override;
 
-	void Search(int start, int node, UnicodeRange pattern, Table& table,
-				vector<bool>& visited);
+	void FindNextStates(int start, int vertex, UnicodeRange pattern,
+						Table& table, vector<bool>& visited);
 
-	Row ComputeRow(size_t node, Table& table);
-	Row ComputeRowOfNodes(std::set<StateID> nodes, Table& table);
+	Row ComputeNextRow(size_t vertex, Table& table);
+	Row ComputeVerticesNextRow(std::set<StateID> vertices, Table& table);
 	vector<DFATableRow> EpsilonClosure();
 
 private:

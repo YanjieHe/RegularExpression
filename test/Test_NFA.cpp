@@ -14,13 +14,14 @@ using namespace regex::notations;
 
 TEST_CASE("test NFA", "[NFA]")
 {
+	string folder = "../test/json/";
 	SECTION("NFA 1")
 	{
 		auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 		NFA nfa(e1);
 		auto actual = NFAToJson(nfa);
 		Json expected;
-		ifstream stream("../test/TestNFA1.json");
+		ifstream stream(folder + "TestNFA1.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -33,7 +34,7 @@ TEST_CASE("test NFA", "[NFA]")
 		NFA nfa(e2);
 		auto actual = NFAToJson(nfa);
 		Json expected;
-		ifstream stream("../test/TestNFA2.json");
+		ifstream stream(folder + "TestNFA2.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -46,7 +47,7 @@ TEST_CASE("test NFA", "[NFA]")
 		NFA nfa(e3);
 		auto actual = NFAToJson(nfa);
 		Json expected;
-		ifstream stream("../test/TestNFA3.json");
+		ifstream stream(folder + "TestNFA3.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -60,7 +61,7 @@ TEST_CASE("test NFA", "[NFA]")
 		NFA nfa(e4);
 		auto actual = NFAToJson(nfa);
 		Json expected;
-		ifstream stream("../test/TestNFA4.json");
+		ifstream stream(folder + "TestNFA4.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);

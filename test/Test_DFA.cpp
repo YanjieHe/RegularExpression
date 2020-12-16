@@ -13,6 +13,7 @@ using namespace regex::notations;
 
 TEST_CASE("test DFA", "[DFA]")
 {
+	string folder = "../test/json/";
 	SECTION("DFA 1")
 	{
 		auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
@@ -23,7 +24,7 @@ TEST_CASE("test DFA", "[DFA]")
 		DFAToDotFile(dfa, "DFA1.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
-		ifstream stream("../test/TestDFA1.json");
+		ifstream stream(folder + "TestDFA1.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -38,7 +39,7 @@ TEST_CASE("test DFA", "[DFA]")
 		DFAToDotFile(dfa, "DFA2.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
-		ifstream stream("../test/TestDFA2.json");
+		ifstream stream(folder + "TestDFA2.json");
 		stream >> expected;
 
 		REQUIRE(actual == expected);
@@ -53,7 +54,7 @@ TEST_CASE("test DFA", "[DFA]")
 		DFAToDotFile(dfa, "DFA3.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
-		ifstream stream("../test/TestDFA3.json");
+		ifstream stream(folder + "TestDFA3.json");
 		stream >> expected;
 		REQUIRE(actual == expected);
 	}
@@ -68,7 +69,7 @@ TEST_CASE("test DFA", "[DFA]")
 		DFAToDotFile(dfa, "DFA4.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
-		ifstream stream("../test/TestDFA4.json");
+		ifstream stream(folder + "TestDFA4.json");
 		stream >> expected;
 		REQUIRE(actual == expected);
 	}

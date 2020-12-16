@@ -78,10 +78,8 @@ void NFA::CollectPatterns()
 	}
 }
 
-void NFA::Search(
-	int start, int node, UnicodeRange pattern,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table,
-	vector<bool>& visited)
+void NFA::Search(int start, int node, UnicodeRange pattern, NFA::Table& table,
+				 vector<bool>& visited)
 {
 	if (visited.at(node))
 	{
@@ -113,12 +111,10 @@ void NFA::Search(
 	}
 }
 
-unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
-	size_t node,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
+NFA::Row NFA::ComputeRow(size_t node, NFA::Table& table)
 {
 	auto epsilonNextStates = table[node][UnicodeRange::EPSILON];
-	unordered_map<UnicodeRange, unordered_set<StateID>> nextStatesMap;
+	Row nextStatesMap;
 	for (auto[patternID, nextStates] : table[node])
 	{
 		if (!patternID.IsEpsilon())
@@ -134,11 +130,9 @@ unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRow(
 	return nextStatesMap;
 }
 
-unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRowOfNodes(
-	std::set<StateID> nodes,
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>>& table)
+NFA::Row NFA::ComputeRowOfNodes(std::set<StateID> nodes, NFA::Table& table)
 {
-	unordered_map<UnicodeRange, unordered_set<StateID>> nodeStates;
+	Row nodeStates;
 	for (auto node : nodes)
 	{
 		auto result = ComputeRow(node, table);
@@ -156,7 +150,7 @@ unordered_map<UnicodeRange, unordered_set<StateID>> NFA::ComputeRowOfNodes(
 vector<DFATableRow> NFA::EpsilonClosure()
 {
 	size_t N = G.NodeCount();
-	vector<unordered_map<UnicodeRange, unordered_set<StateID>>> table(N);
+	Table table(N);
 	for (size_t node = 0; node < N; node++)
 	{
 		vector<bool> visited(N, false);

@@ -11,7 +11,7 @@ u32string UnicodeRange::ToString() const
 		return U"ε";
 	}
 	else if (rangeType == RangeType::LineBegin)
-{
+	{
 		return U"^";
 	}
 	else if (rangeType == RangeType::LineEnd)
@@ -30,13 +30,13 @@ u32string UnicodeRange::ToString() const
 
 UnicodeRange UnicodeRange::EPSILON = UnicodeRange();
 
-DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
-					   const UnicodePatterns& patterns, const Graph& nfaGraph,
-					   int nfaEndState)
+DFA DFATableRowsToDFAGraph(const vector<DFATableRow>& rows,
+						   const UnicodePatterns& patterns,
+						   const Graph& nfaGraph, int nfaEndState)
 {
 	unordered_map<std::set<StateID>, StateID, StateIDSetHash> statesID;
 	DFA graph;
-	for (int i = 0; i < static_cast<int>(patterns.Size()) - 1; i++)
+	for (int i = 0, n = static_cast<int>(patterns.Size()); i < n - 1; i++)
 	{
 		// add all the patterns except epsilon
 		if (auto pattern = patterns.GetPatternByID(i))
@@ -84,6 +84,10 @@ bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 		else if (CanTransit(nfaGraph, i, nfaEndState))
 		{
 			return true;
+		}
+		else
+		{
+			// pass
 		}
 	}
 	return false;
@@ -169,6 +173,10 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 								i++;
 								break;
 							}
+							else
+							{
+								// pass
+							}
 						}
 						else if (pattern.value().rangeType ==
 								 RangeType::LineBegin)
@@ -179,6 +187,10 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 								state = matrix.at(state).at(j);
 								matched = true;
 								break;
+							}
+							else
+							{
+								// pass
 							}
 						}
 						else if (pattern.value().rangeType ==
@@ -191,6 +203,14 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 								matched = true;
 								break;
 							}
+							else
+							{
+								// pass
+							}
+						}
+						else
+						{
+							// pass
 						}
 					}
 				}
@@ -224,20 +244,18 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 
 DFAMatrix CreateDFAMatrix(const DFA& dfaGraph)
 {
-	DFAMatrix matrix;
-	matrix.matrix = vector<vector<int>>(
+	vector<vector<int>> transitionMatrix(
 		dfaGraph.G.NodeCount(), vector<int>(dfaGraph.patterns.Size(), -1));
-	matrix.patterns = dfaGraph.patterns;
-	matrix.endStates = dfaGraph.endStates;
 	for (auto edges : dfaGraph.G.adj)
 	{
 		for (auto edge : edges)
 		{
-			matrix.matrix.at(edge.from).at(
-				matrix.patterns.GetIDByPattern(edge.pattern).value()) = edge.to;
+			int patternID =
+				dfaGraph.patterns.GetIDByPattern(edge.pattern).value();
+			transitionMatrix.at(edge.from).at(patternID) = edge.to;
 		}
 	}
-	return matrix;
+	return DFAMatrix(transitionMatrix, dfaGraph.patterns, dfaGraph.endStates);
 }
 
 bool CanTransit(const Graph& G, StateID s1, StateID s2)

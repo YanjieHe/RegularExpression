@@ -241,6 +241,14 @@ public:
 	vector<vector<int>> matrix;
 	UnicodePatterns patterns;
 	unordered_set<StateID> endStates;
+	DFAMatrix() = default;
+	DFAMatrix(vector<vector<int>> matrix, UnicodePatterns patterns,
+			  unordered_set<StateID> endStates)
+		: matrix{matrix}
+		, patterns{patterns}
+		, endStates{endStates}
+	{
+	}
 
 	bool FullMatch(const u32string& str) const;
 	int Search(const u32string& str) const;
@@ -248,9 +256,9 @@ public:
 			  bool greedyMode) const;
 };
 
-DFA DFATableToDFAGraph(const vector<DFATableRow>& rows,
-					   const UnicodePatterns& patterns, const Graph& nfaGraph,
-					   int nfaEndState);
+DFA DFATableRowsToDFAGraph(const vector<DFATableRow>& rows,
+						   const UnicodePatterns& patterns,
+						   const Graph& nfaGraph, int nfaEndState);
 
 bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 				StateID nfaEndState);

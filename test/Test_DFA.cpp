@@ -20,7 +20,7 @@ TEST_CASE("test DFA", "[DFA]")
 		NFA nfa(e1);
 		auto dfaTable = nfa.EpsilonClosure();
 		auto dfa =
-			DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+			DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 		DFAToDotFile(dfa, "DFA1.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
@@ -35,7 +35,7 @@ TEST_CASE("test DFA", "[DFA]")
 		NFA nfa(e2);
 		auto dfaTable = nfa.EpsilonClosure();
 		auto dfa =
-			DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+			DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 		DFAToDotFile(dfa, "DFA2.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
@@ -50,7 +50,7 @@ TEST_CASE("test DFA", "[DFA]")
 		NFA nfa(e3);
 		auto dfaTable = nfa.EpsilonClosure();
 		auto dfa =
-			DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+			DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 		DFAToDotFile(dfa, "DFA3.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;
@@ -65,7 +65,7 @@ TEST_CASE("test DFA", "[DFA]")
 		NFA nfa(e4);
 		auto dfaTable = nfa.EpsilonClosure();
 		auto dfa =
-			DFATableToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+			DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
 		DFAToDotFile(dfa, "DFA4.dot");
 		auto actual = DFAToJson(dfa);
 		Json expected;

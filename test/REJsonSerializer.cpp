@@ -1,7 +1,7 @@
 #include "REJsonSerializer.hpp"
-#include "Encoding.hpp"
 #include <iostream>
 #include <fstream>
+#include <utfcpp/utf8/cpp11.h>
 
 using std::endl;
 using std::ofstream;
@@ -32,8 +32,8 @@ Json REJsonSerializer::VisitSymbol(const SymbolExpression::Ptr& exp)
 {
 	// exp->range.rangeType -> string
 	return {{"kind", "Symbol"},
-			{"lower", encoding::utf32_to_utf8(u32string({exp->range.lower}))},
-			{"upper", encoding::utf32_to_utf8(u32string({exp->range.upper}))}};
+			{"lower", utf8::utf32to8(u32string({exp->range.lower}))},
+			{"upper", utf8::utf32to8(u32string({exp->range.upper}))}};
 }
 
 Json NFAToJson(const NFA& nfa)
@@ -55,10 +55,9 @@ Json GraphToJson(const Graph& graph)
 
 Json EdgeToJson(const Edge& edge)
 {
-	return JsonMap(
-		{{"from", edge.from},
-		 {"to", edge.to},
-		 {"pattern", encoding::utf32_to_utf8(edge.pattern.ToString())}});
+	return JsonMap({{"from", edge.from},
+					{"to", edge.to},
+					{"pattern", utf8::utf32to8(edge.pattern.ToString())}});
 }
 
 void NFAToDotFile(const NFA& nfa, string path)
@@ -76,8 +75,8 @@ void NFAToDotFile(const NFA& nfa, string path)
 	for (const auto& edge : edges)
 	{
 		out << edge.from << " -> " << edge.to;
-		out << "[label=\"" << encoding::utf32_to_utf8(edge.pattern.ToString())
-			<< "\"];" << endl;
+		out << "[label=\"" << utf8::utf32to8(edge.pattern.ToString()) << "\"];"
+			<< endl;
 	}
 	out << "}" << endl;
 }
@@ -140,8 +139,8 @@ void DFAToDotFile(const DFA& dfa, string path)
 	for (const auto& edge : edges)
 	{
 		out << edge.from << " -> " << edge.to;
-		out << "[label=\"" << encoding::utf32_to_utf8(edge.pattern.ToString())
-			<< "\"];" << endl;
+		out << "[label=\"" << utf8::utf32to8(edge.pattern.ToString()) << "\"];"
+			<< endl;
 	}
 	out << "}" << endl;
 }

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include "Encoding.hpp"
 
 using std::cout;
 using std::endl;

@@ -3,7 +3,6 @@
 #include "NFA.hpp"
 #include <iostream>
 #include <iomanip>
-#include "Encoding.hpp"
 
 using std::cout;
 using std::endl;

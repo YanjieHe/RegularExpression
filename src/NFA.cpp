@@ -4,10 +4,10 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
-#include "Encoding.hpp"
 #include "NFA.hpp"
 #include <stack>
 #include "DFA.hpp"
+#include <utfcpp/utf8/cpp11.h>
 
 namespace regex
 {
@@ -174,22 +174,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 		vector<bool> visited(N, false);
 		FindNextStates(node, node, UnicodeRange::EPSILON, table, visited);
 	}
-	using namespace std;
-
-	// for (size_t node = 0; node < N; node++)
-	// {
-	// 	cout << "node = " << node << endl;
-	// 	for (auto[pattern, set] : table.at(node))
-	// 	{
-	// 		cout << "pattern = " << encoding::utf32_to_utf8(pattern.ToString())
-	// 			 << " : {";
-	// 		for (int item : set)
-	// 		{
-	// 			cout << " " << item;
-	// 		}
-	// 		cout << " }" << endl;
-	// 	}
-	// }
 	vector<DFATableRow> rows;
 
 	unordered_map<std::set<StateID>, bool, StateIDSetHash> registeredStates;
@@ -204,13 +188,6 @@ vector<DFATableRow> NFA::EpsilonClosure()
 
 		for (auto[pattern, nextStatesSet] : nextStatesMap)
 		{
-			// cout << "pattern " << encoding::utf32_to_utf8(pattern.ToString())
-			// 	 << ", next states set ";
-			// for (auto item : nextStatesSet)
-			// {
-			// 	cout << item << " ";
-			// }
-			// cout << endl;
 			if (auto index = patterns.GetIDByPattern(pattern))
 			{
 				nextStates[index.value()] = std::set<StateID>(
@@ -252,7 +229,7 @@ void ViewRow(const DFATableRow& row, const UnicodePatterns& patterns)
 		cout << "STATE ";
 		if (auto pattern = patterns.GetPatternByID(i))
 		{
-			cout << encoding::utf32_to_utf8(pattern.value().ToString());
+			cout << utf8::utf32to8(pattern.value().ToString());
 		}
 		cout << " ";
 		cout << "{";

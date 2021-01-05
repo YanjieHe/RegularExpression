@@ -1,6 +1,5 @@
 #include "REJsonSerializer.hpp"
 #include <catch2/catch.hpp>
-#include "Encoding.hpp"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

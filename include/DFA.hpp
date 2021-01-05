@@ -8,6 +8,10 @@
 
 namespace regex
 {
+using std::vector;
+using std::u32string;
+using std::unordered_map;
+using std::unordered_set;
 using std::u32string;
 static const int EPSILON = -1;
 using StateID = size_t;
@@ -60,10 +64,7 @@ struct UnicodeRange
 
 	static UnicodeRange EPSILON;
 };
-} // namespace regex
-
-template <>
-struct std::hash<regex::UnicodeRange>
+struct UnicodeRangeHash
 {
 	size_t operator()(const regex::UnicodeRange& pattern) const noexcept
 	{
@@ -73,18 +74,10 @@ struct std::hash<regex::UnicodeRange>
 		return h1 ^ (h2 << 1) ^ (h3 << 1);
 	}
 };
-
-namespace regex
-{
-using std::vector;
-using std::u32string;
-using std::unordered_map;
-using std::unordered_set;
-
 class UnicodePatterns
 {
 public:
-	unordered_map<UnicodeRange, int> patternToID;
+	unordered_map<UnicodeRange, int, UnicodeRangeHash> patternToID;
 	unordered_map<int, UnicodeRange> IDToPattern;
 
 	void Add(UnicodeRange pattern, int id)

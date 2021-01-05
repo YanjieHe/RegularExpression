@@ -36,7 +36,8 @@ public:
 class NFA : public RegularExpressionVisitor<NFASubgraph>
 {
 public:
-	typedef unordered_map<UnicodeRange, unordered_set<StateID>> Row;
+	typedef unordered_map<UnicodeRange, unordered_set<StateID>,
+						  UnicodeRangeHash> Row;
 	typedef vector<Row> Table;
 
 	Graph G;

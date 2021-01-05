@@ -80,7 +80,6 @@ using std::vector;
 using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
-using std::optional;
 
 class UnicodePatterns
 {
@@ -99,28 +98,19 @@ public:
 		return patternToID.size();
 	}
 
-	optional<int> GetIDByPattern(UnicodeRange pattern) const
+	int GetIDByPattern(const UnicodeRange& pattern) const
 	{
-		if (patternToID.count(pattern))
-		{
-			return patternToID.at(pattern);
-		}
-		else
-		{
-			return optional<int>();
-		}
+		return patternToID.at(pattern);
 	}
 
-	optional<UnicodeRange> GetPatternByID(int id) const
+	bool HasPattern(const UnicodeRange& pattern) const
 	{
-		if (IDToPattern.count(id))
-		{
-			return IDToPattern.at(id);
-		}
-		else
-		{
-			return optional<UnicodeRange>();
-		}
+		return patternToID.count(pattern);
+	}
+
+	const UnicodeRange& GetPatternByID(int id) const
+	{
+		return IDToPattern.at(id);
 	}
 };
 
@@ -242,13 +232,7 @@ public:
 	UnicodePatterns patterns;
 	unordered_set<StateID> endStates;
 	DFAMatrix() = default;
-	DFAMatrix(vector<vector<int>> matrix, UnicodePatterns patterns,
-			  unordered_set<StateID> endStates)
-		: matrix{matrix}
-		, patterns{patterns}
-		, endStates{endStates}
-	{
-	}
+	explicit DFAMatrix(const DFA& dfaGraph);
 
 	bool FullMatch(const u32string& str) const;
 	int Search(const u32string& str) const;
@@ -266,8 +250,6 @@ bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 StateID RecordState(
 	unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
 	const std::set<StateID>& state);
-
-DFAMatrix CreateDFAMatrix(const DFA& dfaGraph);
 
 bool CanTransit(const Graph& G, StateID s1, StateID s2);
 

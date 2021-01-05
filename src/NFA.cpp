@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <algorithm>
 #include "NFA.hpp"
-#include <stack>
 #include "DFA.hpp"
 #include <utfcpp/utf8/cpp11.h>
 
@@ -70,7 +69,7 @@ void NFA::CollectPatterns()
 	patterns.Add(UnicodeRange::EPSILON, EPSILON);
 	for (auto edge : G.GetEdges())
 	{
-		if (!patterns.GetIDByPattern(edge.pattern))
+		if (!patterns.HasPattern(edge.pattern))
 		{
 			int n = static_cast<int>(patterns.Size());
 			patterns.Add(edge.pattern, n - 1);
@@ -188,11 +187,9 @@ vector<DFATableRow> NFA::EpsilonClosure()
 
 		for (auto[pattern, nextStatesSet] : nextStatesMap)
 		{
-			if (auto index = patterns.GetIDByPattern(pattern))
-			{
-				nextStates[index.value()] = std::set<StateID>(
-					nextStatesSet.begin(), nextStatesSet.end());
-			}
+			int index = patterns.GetIDByPattern(pattern);
+			nextStates.at(index) =
+				std::set<StateID>(nextStatesSet.begin(), nextStatesSet.end());
 		}
 		rows.push_back(DFATableRow(index, nextStates));
 		for (auto state : nextStates)
@@ -227,10 +224,8 @@ void ViewRow(const DFATableRow& row, const UnicodePatterns& patterns)
 	{
 		auto state = row.nextStates.at(i);
 		cout << "STATE ";
-		if (auto pattern = patterns.GetPatternByID(i))
-		{
-			cout << utf8::utf32to8(pattern.value().ToString());
-		}
+		auto pattern = patterns.GetPatternByID(i);
+		cout << utf8::utf32to8(pattern.ToString());
 		cout << " ";
 		cout << "{";
 		for (auto item : state)

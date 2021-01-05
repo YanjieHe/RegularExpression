@@ -8,6 +8,10 @@
 
 namespace regex
 {
+using std::vector;
+using std::u32string;
+using std::unordered_map;
+using std::unordered_set;
 using std::u32string;
 static const int EPSILON = -1;
 using StateID = size_t;
@@ -60,32 +64,29 @@ struct UnicodeRange
 
 	static UnicodeRange EPSILON;
 };
-} // namespace regex
-
-template <>
-struct std::hash<regex::UnicodeRange>
+struct UnicodeRangeHash
 {
 	size_t operator()(const regex::UnicodeRange& pattern) const noexcept
 	{
 		size_t h1 = static_cast<size_t>(pattern.rangeType);
 		size_t h2 = static_cast<size_t>(pattern.lower);
 		size_t h3 = static_cast<size_t>(pattern.upper);
-		return h1 ^ (h2 << 1) ^ (h3 << 1);
+		size_t hash = 1;
+		hash = hash * 31 + h1;
+		hash = hash * 31 + h2;
+		hash = hash * 31 + h3;
+		return hash;
 	}
 };
-
-namespace regex
+inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
 {
-using std::vector;
-using std::u32string;
-using std::unordered_map;
-using std::unordered_set;
-using std::optional;
-
+	return x.rangeType == y.rangeType && x.lower == y.lower &&
+		   x.upper == y.upper;
+}
 class UnicodePatterns
 {
 public:
-	unordered_map<UnicodeRange, int> patternToID;
+	unordered_map<UnicodeRange, int, UnicodeRangeHash> patternToID;
 	unordered_map<int, UnicodeRange> IDToPattern;
 
 	void Add(UnicodeRange pattern, int id)
@@ -99,28 +100,19 @@ public:
 		return patternToID.size();
 	}
 
-	optional<int> GetIDByPattern(UnicodeRange pattern) const
+	int GetIDByPattern(const UnicodeRange& pattern) const
 	{
-		if (patternToID.count(pattern))
-		{
-			return patternToID.at(pattern);
-		}
-		else
-		{
-			return optional<int>();
-		}
+		return patternToID.at(pattern);
 	}
 
-	optional<UnicodeRange> GetPatternByID(int id) const
+	bool HasPattern(const UnicodeRange& pattern) const
 	{
-		if (IDToPattern.count(id))
-		{
-			return IDToPattern.at(id);
-		}
-		else
-		{
-			return optional<UnicodeRange>();
-		}
+		return patternToID.count(pattern);
+	}
+
+	const UnicodeRange& GetPatternByID(int id) const
+	{
+		return IDToPattern.at(id);
 	}
 };
 
@@ -131,12 +123,7 @@ public:
 	StateID to;
 	UnicodeRange pattern;
 
-	Edge()
-		: from{0}
-		, to{0}
-		, pattern{}
-	{
-	}
+	Edge() = default;
 	Edge(StateID from, StateID to, UnicodeRange pattern)
 		: from{from}
 		, to{to}
@@ -154,9 +141,7 @@ class Graph
 public:
 	vector<vector<Edge>> adj;
 
-	Graph()
-	{
-	}
+	Graph() = default;
 	StateID AddNode()
 	{
 		StateID n = adj.size();
@@ -199,10 +184,10 @@ struct StateIDSetHash
 {
 	size_t operator()(const std::set<StateID>& stateIDs) const
 	{
-		size_t hash = stateIDs.size();
+		size_t hash = 1;
 		for (auto& i : stateIDs)
 		{
-			hash = hash ^ (i + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+			hash = hash * 31 + i;
 		}
 		return hash;
 	}
@@ -229,12 +214,6 @@ public:
 	}
 };
 
-inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
-{
-	return x.rangeType == y.rangeType && x.lower == y.lower &&
-		   x.upper == y.upper;
-}
-
 class DFAMatrix
 {
 public:
@@ -242,13 +221,7 @@ public:
 	UnicodePatterns patterns;
 	unordered_set<StateID> endStates;
 	DFAMatrix() = default;
-	DFAMatrix(vector<vector<int>> matrix, UnicodePatterns patterns,
-			  unordered_set<StateID> endStates)
-		: matrix{matrix}
-		, patterns{patterns}
-		, endStates{endStates}
-	{
-	}
+	explicit DFAMatrix(const DFA& dfaGraph);
 
 	bool FullMatch(const u32string& str) const;
 	int Search(const u32string& str) const;
@@ -266,8 +239,6 @@ bool IsEndState(const std::set<StateID>& index, const Graph& nfaGraph,
 StateID RecordState(
 	unordered_map<std::set<StateID>, StateID, StateIDSetHash>& stateMap,
 	const std::set<StateID>& state);
-
-DFAMatrix CreateDFAMatrix(const DFA& dfaGraph);
 
 bool CanTransit(const Graph& G, StateID s1, StateID s2);
 

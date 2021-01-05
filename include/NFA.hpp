@@ -7,7 +7,6 @@
 #include "RegularExpression.hpp"
 #include <cstdint>
 #include "DFA.hpp"
-#include <optional>
 
 namespace regex
 {
@@ -15,7 +14,6 @@ namespace regex
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
-using std::optional;
 
 class NFASubgraph
 {
@@ -23,11 +21,7 @@ public:
 	StateID start;
 	StateID end;
 
-	NFASubgraph()
-		: start{0}
-		, end{0}
-	{
-	}
+	NFASubgraph() = default;
 	NFASubgraph(StateID start, StateID end)
 		: start{start}
 		, end{end}
@@ -38,7 +32,8 @@ public:
 class NFA : public RegularExpressionVisitor<NFASubgraph>
 {
 public:
-	typedef unordered_map<UnicodeRange, unordered_set<StateID>> Row;
+	typedef unordered_map<UnicodeRange, unordered_set<StateID>,
+						  UnicodeRangeHash> Row;
 	typedef vector<Row> Table;
 
 	Graph G;

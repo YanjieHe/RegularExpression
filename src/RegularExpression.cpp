@@ -11,8 +11,8 @@ DFAMatrix RegularExpression::Compile()
 	NFA nfa{exp};
 	auto dfaTable = nfa.EpsilonClosure();
 	auto dfaGraph =
-		regex::DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
-	return CreateDFAMatrix(dfaGraph);
+		DFATableRowsToDFAGraph(dfaTable, nfa.patterns, nfa.G, nfa.endVertex);
+	return DFAMatrix(dfaGraph);
 }
 
 RegularExpression::Ptr RegularExpression::Many()

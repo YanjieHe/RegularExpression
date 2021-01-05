@@ -21,11 +21,7 @@ public:
 	StateID start;
 	StateID end;
 
-	NFASubgraph()
-		: start{0}
-		, end{0}
-	{
-	}
+	NFASubgraph() = default;
 	NFASubgraph(StateID start, StateID end)
 		: start{start}
 		, end{end}

@@ -71,9 +71,18 @@ struct UnicodeRangeHash
 		size_t h1 = static_cast<size_t>(pattern.rangeType);
 		size_t h2 = static_cast<size_t>(pattern.lower);
 		size_t h3 = static_cast<size_t>(pattern.upper);
-		return h1 ^ (h2 << 1) ^ (h3 << 1);
+		size_t hash = 1;
+		hash = hash * 31 + h1;
+		hash = hash * 31 + h2;
+		hash = hash * 31 + h3;
+		return hash;
 	}
 };
+inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
+{
+	return x.rangeType == y.rangeType && x.lower == y.lower &&
+		   x.upper == y.upper;
+}
 class UnicodePatterns
 {
 public:
@@ -114,12 +123,7 @@ public:
 	StateID to;
 	UnicodeRange pattern;
 
-	Edge()
-		: from{0}
-		, to{0}
-		, pattern{}
-	{
-	}
+	Edge() = default;
 	Edge(StateID from, StateID to, UnicodeRange pattern)
 		: from{from}
 		, to{to}
@@ -137,9 +141,7 @@ class Graph
 public:
 	vector<vector<Edge>> adj;
 
-	Graph()
-	{
-	}
+	Graph() = default;
 	StateID AddNode()
 	{
 		StateID n = adj.size();
@@ -182,10 +184,10 @@ struct StateIDSetHash
 {
 	size_t operator()(const std::set<StateID>& stateIDs) const
 	{
-		size_t hash = stateIDs.size();
+		size_t hash = 1;
 		for (auto& i : stateIDs)
 		{
-			hash = hash ^ (i + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+			hash = hash * 31 + i;
 		}
 		return hash;
 	}
@@ -211,12 +213,6 @@ public:
 	{
 	}
 };
-
-inline bool operator==(const UnicodeRange& x, const UnicodeRange& y)
-{
-	return x.rangeType == y.rangeType && x.lower == y.lower &&
-		   x.upper == y.upper;
-}
 
 class DFAMatrix
 {

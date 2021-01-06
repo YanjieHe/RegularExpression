@@ -153,7 +153,7 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 		{
 			char32_t c = str.at(i);
 			bool matched = false;
-			if (endStates.count(state))
+			if (IsEndState(state))
 			{
 				if (greedyMode)
 				{
@@ -169,58 +169,17 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 				if (matrix.at(state).at(j) != -1)
 				{
 					auto pattern = patterns.GetPatternByID(static_cast<int>(j));
-					if (pattern.rangeType == RangeType::CharacterRange)
+					matched =
+						MatchPattern(state, pattern, c, i, j, startPos, endPos);
+					if (matched)
 					{
-						if (pattern.InBetween(c))
-						{
-							// move to the next state
-							state = matrix.at(state).at(j);
-							matched = true;
-							i++;
-							break;
-						}
-						else
-						{
-							// pass
-						}
-					}
-					else if (pattern.rangeType == RangeType::LineBegin)
-					{
-						if (i == startPos)
-						{
-							// move to the next state
-							state = matrix.at(state).at(j);
-							matched = true;
-							break;
-						}
-						else
-						{
-							// pass
-						}
-					}
-					else if (pattern.rangeType == RangeType::LineEnd)
-					{
-						if (i + 1 == endPos)
-						{
-							// move to the next state
-							state = matrix.at(state).at(j);
-							matched = true;
-							break;
-						}
-						else
-						{
-							// pass
-						}
-					}
-					else
-					{
-						// pass
+						break;
 					}
 				}
 			}
 			if (!matched)
 			{
-				if (endStates.count(state))
+				if (IsEndState(state))
 				{
 					return i;
 				}
@@ -230,7 +189,7 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 				}
 			}
 		}
-		if (endStates.count(state))
+		if (IsEndState(state))
 		{
 			return str.size();
 		}
@@ -243,6 +202,61 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 	{
 		return str.size();
 	}
+}
+
+bool DFAMatrix::MatchPattern(int& state, const UnicodeRange& pattern,
+							 char32_t c, size_t& i, size_t j, size_t startPos,
+							 size_t endPos) const
+{
+	if (pattern.rangeType == RangeType::CharacterRange)
+	{
+		if (pattern.InBetween(c))
+		{
+			// move to the next state
+			state = matrix.at(state).at(j);
+			i++;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (pattern.rangeType == RangeType::LineBegin)
+	{
+		if (i == startPos)
+		{
+			// move to the next state
+			state = matrix.at(state).at(j);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (pattern.rangeType == RangeType::LineEnd)
+	{
+		if (i + 1 == endPos)
+		{
+			// move to the next state
+			state = matrix.at(state).at(j);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool DFAMatrix::IsEndState(int state) const
+{
+	return endStates.count(state);
 }
 
 bool CanTransit(const Graph& G, StateID s1, StateID s2)

@@ -227,6 +227,12 @@ public:
 	int Search(const u32string& str) const;
 	int Match(const u32string& str, size_t startPos, size_t endPos,
 			  bool greedyMode) const;
+
+private:
+	bool MatchPattern(int& state, const UnicodeRange& pattern, char32_t c,
+					  size_t& i, size_t j, size_t startPos,
+					  size_t endPos) const;
+	bool IsEndState(int state) const;
 };
 
 DFA DFATableRowsToDFAGraph(const vector<DFATableRow>& rows,

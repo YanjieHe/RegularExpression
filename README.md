@@ -20,7 +20,7 @@ RegularExpression::Ptr RepeatAtLeast(const RegularExpression::Ptr& x, int times)
 RegularExpression::Ptr Repeat(const RegularExpression::Ptr& x, int atLeast, int atMost);
 ```
 
-### Use Regular Expression
+### Use Regular Expressions
 
 After compiling the regular expressions to DFA matrices, you can use the member functions of DFA matrix to match string patterns.
 
@@ -36,27 +36,27 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos, bool 
 
 ```cpp
 #include <iostream>
-#include <NFA.cpp>
+#include <NFA.hpp>
 
 using std::cout;
 using std::endl;
 using namespace regex::notations;
 
 int main() {
-    auto e = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
-    auto matrix = e1->Compile();
-    if (matrix.FullMatch(U"ab")) {
-        cout << "matched" << endl;
-    } else {
-        cout << "not matched" << endl;
-    }
-    return 0;
+  auto e = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
+  auto matrix = e->Compile();
+  if (matrix.FullMatch(U"ab")) {
+    cout << "matched" << endl;
+  } else {
+    cout << "not matched" << endl;
+  }
+  return 0;
 }
 ```
 
 ### Expression
 
-```
+```cpp
 auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 ```
 
@@ -70,7 +70,7 @@ auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 
 ### Expression
 
-```
+```cpp
 auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 ```
 
@@ -84,7 +84,7 @@ auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 
 ### Expression
 
-```
+```cpp
 auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 ```
 
@@ -97,7 +97,7 @@ auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 
 ### Expression
 
-```
+```cpp
 auto e4 = (Range(U'0', U'9')->Many() | (LineBegin() + Symbol(U'a')->Many()));
 ```
 

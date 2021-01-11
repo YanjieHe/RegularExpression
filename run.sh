@@ -6,7 +6,7 @@ cmake ..
 status=$?
 if test $status -eq 0
 then
-	make
+	make -j8
 	status=$?
 	if test $status -eq 0
 	then

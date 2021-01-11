@@ -49,4 +49,35 @@ TEST_CASE("Test Matching", "[DFAMatrix]")
 		REQUIRE(matrix4.FullMatch(U"aaa") == true);
 		REQUIRE(matrix4.FullMatch(U"123") == true);
 	}
+	SECTION("Test RepeatExactly")
+	{
+		auto e =
+			(Range(U'0', U'9')->Many()) + RepeatExactly(Literal(U"ABC"), 3);
+		auto matrix = e->Compile();
+
+		REQUIRE(matrix.FullMatch(U"321ABCABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABCABC") == false);
+	}
+	SECTION("Test RepeatAtLeast")
+	{
+		auto e =
+			(Range(U'0', U'9')->Many()) + RepeatAtLeast(Literal(U"ABC"), 3);
+		auto matrix = e->Compile();
+
+		REQUIRE(matrix.FullMatch(U"321ABCABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABCABC") == false);
+		REQUIRE(matrix.FullMatch(U"321ABCABCABCABC") == true);
+	}
+	SECTION("Test Repeat")
+	{
+		auto e = (Range(U'0', U'9')->Many()) + Repeat(Literal(U"ABC"), 2, 5);
+		auto matrix = e->Compile();
+
+		REQUIRE(matrix.FullMatch(U"321ABCABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABC") == false);
+		REQUIRE(matrix.FullMatch(U"321ABCABCABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABCABCABCABCABC") == true);
+		REQUIRE(matrix.FullMatch(U"321ABCABCABCABCABCABC") == false);
+	}
 }

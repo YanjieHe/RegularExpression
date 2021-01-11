@@ -116,5 +116,28 @@ RegularExpression::Ptr LineEnd()
 	return make_shared<SymbolExpression>(
 		UnicodeRange(RangeType::LineEnd, char32_t{0}, char32_t{0}));
 }
+RegularExpression::Ptr RepeatExactly(const RegularExpression::Ptr& x, int times)
+{
+	auto result = x;
+	for (int i = 0; i < times - 1; i++)
+	{
+		result = result + x;
+	}
+	return result;
+}
+RegularExpression::Ptr RepeatAtLeast(const RegularExpression::Ptr& x, int times)
+{
+	return RepeatExactly(x, times) + x->Many();
+}
+RegularExpression::Ptr Repeat(const RegularExpression::Ptr& x, int atLeast,
+							  int atMost)
+{
+	auto result = RepeatExactly(x, atLeast);
+	for (int i = atLeast + 1; i <= atMost; i++)
+	{
+		result = result | RepeatExactly(x, i);
+	}
+	return result;
+}
 } // namespace notations
 } // namespace regex

@@ -40,6 +40,7 @@ public:
 	UnicodePatterns patterns;
 	size_t startVertex;
 	size_t endVertex;
+	static const int EPSILON = -1;
 
 	explicit NFA(const RegularExpression::Ptr& exp);
 

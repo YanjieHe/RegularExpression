@@ -144,6 +144,10 @@ RegularExpression::Ptr Literal(const u32string& text);
 RegularExpression::Ptr Range(char32_t lower, char32_t upper);
 RegularExpression::Ptr LineBegin();
 RegularExpression::Ptr LineEnd();
+RegularExpression::Ptr RepeatExactly(const RegularExpression::Ptr& x, int times);
+RegularExpression::Ptr RepeatAtLeast(const RegularExpression::Ptr& x,
+									 int times);
+RegularExpression::Ptr Repeat(const RegularExpression::Ptr& x, int atLeast, int atMost);
 } // namespace notations
 
 } // namespace regex

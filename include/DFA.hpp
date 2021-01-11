@@ -13,7 +13,6 @@ using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
 using std::u32string;
-static const int EPSILON = -1;
 using StateID = size_t;
 
 enum class RangeType
@@ -21,8 +20,6 @@ enum class RangeType
 	Epsilon,
 	LineBegin,
 	LineEnd,
-	WordBegin,
-	WordEnd,
 	CharacterRange
 };
 
@@ -227,6 +224,12 @@ public:
 	int Search(const u32string& str) const;
 	int Match(const u32string& str, size_t startPos, size_t endPos,
 			  bool greedyMode) const;
+
+private:
+	bool MatchPattern(int& state, const UnicodeRange& pattern, char32_t c,
+					  size_t& i, size_t j, size_t startPos,
+					  size_t endPos) const;
+	bool IsEndState(int state) const;
 };
 
 DFA DFATableRowsToDFAGraph(const vector<DFATableRow>& rows,

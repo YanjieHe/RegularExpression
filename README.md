@@ -56,7 +56,7 @@ int main() {
 
 ### Expression
 
-```
+```cpp
 auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 ```
 
@@ -70,7 +70,7 @@ auto e1 = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
 
 ### Expression
 
-```
+```cpp
 auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 ```
 
@@ -84,7 +84,7 @@ auto e2 = Symbol(U'a')->Many() + Symbol(U'b')->Many();
 
 ### Expression
 
-```
+```cpp
 auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 ```
 
@@ -97,7 +97,7 @@ auto e3 = (Range(U'0', U'9') | Symbol(U'a'))->Many();
 
 ### Expression
 
-```
+```cpp
 auto e4 = (Range(U'0', U'9')->Many() | (LineBegin() + Symbol(U'a')->Many()));
 ```
 

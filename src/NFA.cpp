@@ -1,19 +1,15 @@
 #include <iostream>
 #include <stack>
-#include <vector>
-#include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
+#include <utfcpp/utf8/cpp11.h>
 #include "NFA.hpp"
 #include "DFA.hpp"
-#include <utfcpp/utf8/cpp11.h>
 
 namespace regex
 {
 
-using std::vector;
 using std::unordered_set;
-using std::unordered_map;
 using std::static_pointer_cast;
 using std::cout;
 using std::endl;

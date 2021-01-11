@@ -13,7 +13,6 @@ using std::u32string;
 using std::unordered_map;
 using std::unordered_set;
 using std::u32string;
-static const int EPSILON = -1;
 using StateID = size_t;
 
 enum class RangeType
@@ -21,8 +20,6 @@ enum class RangeType
 	Epsilon,
 	LineBegin,
 	LineEnd,
-	WordBegin,
-	WordEnd,
 	CharacterRange
 };
 

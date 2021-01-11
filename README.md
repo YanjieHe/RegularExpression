@@ -36,21 +36,21 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos, bool 
 
 ```cpp
 #include <iostream>
-#include <NFA.cpp>
+#include <NFA.hpp>
 
 using std::cout;
 using std::endl;
 using namespace regex::notations;
 
 int main() {
-    auto e = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
-    auto matrix = e1->Compile();
-    if (matrix.FullMatch(U"ab")) {
-        cout << "matched" << endl;
-    } else {
-        cout << "not matched" << endl;
-    }
-    return 0;
+  auto e = (Symbol(U'a') + Symbol(U'b')) | (Symbol(U'b') + Symbol(U'a'));
+  auto matrix = e->Compile();
+  if (matrix.FullMatch(U"ab")) {
+    cout << "matched" << endl;
+  } else {
+    cout << "not matched" << endl;
+  }
+  return 0;
 }
 ```
 

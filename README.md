@@ -20,7 +20,7 @@ RegularExpression::Ptr RepeatAtLeast(const RegularExpression::Ptr& x, int times)
 RegularExpression::Ptr Repeat(const RegularExpression::Ptr& x, int atLeast, int atMost);
 ```
 
-### Use Regular Expression
+### Use Regular Expressions
 
 After compiling the regular expressions to DFA matrices, you can use the member functions of DFA matrix to match string patterns.
 

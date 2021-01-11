@@ -80,4 +80,12 @@ TEST_CASE("Test Matching", "[DFAMatrix]")
 		REQUIRE(matrix.FullMatch(U"321ABCABCABCABCABC") == true);
 		REQUIRE(matrix.FullMatch(U"321ABCABCABCABCABCABC") == false);
 	}
+	SECTION("Test Matching from the middle of the string")
+	{
+		auto e = RepeatExactly(Range(U'0', U'9'), 3);
+		auto matrix = e->Compile();
+
+		REQUIRE(matrix.Match(U"abc321", 3, 6, true) == 3);
+		REQUIRE(matrix.Match(U"abcefg321", 6, 9, true) == 3);
+	}
 }

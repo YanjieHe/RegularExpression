@@ -157,11 +157,11 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 			{
 				if (greedyMode)
 				{
-					lastMatchedLength = i;
+					lastMatchedLength = i - startPos;
 				}
 				else
 				{
-					return i;
+					return i - startPos;
 				}
 			}
 			for (size_t j = 0; j < matrix.at(0).size(); j++)
@@ -181,26 +181,26 @@ int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos,
 			{
 				if (IsEndState(state))
 				{
-					return i;
+					return i - startPos;
 				}
 				else
 				{
-					return lastMatchedLength;
+					return lastMatchedLength - startPos;
 				}
 			}
 		}
 		if (IsEndState(state))
 		{
-			return str.size();
+			return str.size() - startPos;
 		}
 		else
 		{
-			return lastMatchedLength;
+			return lastMatchedLength - startPos;
 		}
 	}
 	else
 	{
-		return str.size();
+		return str.size() - startPos;
 	}
 }
 

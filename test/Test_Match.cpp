@@ -86,4 +86,12 @@ TEST_CASE("Test Matching", "[DFAMatrix]")
         REQUIRE(matrix.Match(U"abc321", 3, 6, true) == 3);
         REQUIRE(matrix.Match(U"abcefg321", 6, 9, true) == 3);
     }
+    SECTION("Test Matching a Word")
+    {
+        auto e = Literal(U"apple");
+        auto matrix = e->Compile();
+
+        REQUIRE(matrix.Match(U"apple", 0, u32string::npos, true) == 5);
+        REQUIRE(matrix.Match(U"apple and banana", 0, u32string::npos, true) == 5);
+    }
 }

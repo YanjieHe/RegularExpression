@@ -145,6 +145,10 @@ namespace regex
             int state = 0;
             int lastMatchedLength = -1;
             size_t i = startPos;
+            if (endPos == u32string::npos)
+            {
+                endPos = str.size();
+            }
             while (i < endPos)
             {
                 char32_t c = str.at(i);

@@ -194,10 +194,12 @@ namespace regex
 
     class DFAMatrix
     {
-    public:
+    private:
         vector<vector<int>> matrix;
         UnicodePatterns patterns;
         unordered_set<StateID> endStates;
+
+    public:
         DFAMatrix() = default;
         explicit DFAMatrix(const DFA &dfaGraph);
 

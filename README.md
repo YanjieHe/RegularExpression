@@ -1,5 +1,17 @@
 # A DFA-based Regular Expression Library for C++
 
+## Run All the Tests
+
+Input the following commands in the terminal to run all the tests.
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./RegularExpression
+```
+
 ## API
 
 ### Regular Expression Notations

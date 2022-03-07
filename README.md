@@ -8,7 +8,7 @@ Input the following commands in the terminal to run all the tests.
 mkdir build
 cd build
 cmake ..
-make
+cmake --build .
 ./RegularExpression
 ```
 

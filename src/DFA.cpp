@@ -137,7 +137,16 @@ namespace regex
             return strEnd;
         }
     }
-
+    /**
+     * DFAMatrix::Match
+     * 
+     * Match the pattern from the beginning to the end.
+     * 
+     * @param  {u32string::const_iterator} strBegin : start of the target character range
+     * @param  {u32string::const_iterator} strEnd   : end of the target character range
+     * @param  {bool} greedyMode                    : If true, search for the longest match. Otherwise, return immediately once matched.
+     * @return {int}                                : the length of the matched string
+     */
     int DFAMatrix::Match(u32string::const_iterator strBegin, u32string::const_iterator strEnd, bool greedyMode) const
     {
         if (matrix.size() > 0)

@@ -115,47 +115,39 @@ namespace regex
     }
     bool DFAMatrix::FullMatch(const u32string &str) const
     {
-        return Match(str, 0, str.size(), true) == static_cast<int>(str.size());
+        return Match(str.begin(), str.end(), true) == static_cast<int>(str.size());
     }
 
-    int DFAMatrix::Search(const u32string &str) const
+    u32string::const_iterator DFAMatrix::Search(u32string::const_iterator strBegin, u32string::const_iterator strEnd) const
     {
         if (matrix.size() > 0)
         {
-            for (size_t start = 0; start < str.size(); start++)
+            for (u32string::const_iterator start = strBegin; start < strEnd; start++)
             {
-                int length = Match(str, start, str.size(), false);
+                int length = Match(start, strEnd, false);
                 if (length != -1)
                 {
                     return start;
                 }
             }
-            return -1;
+            return strEnd;
         }
         else
         {
-            return 0;
+            return strEnd;
         }
     }
 
-    int DFAMatrix::Match(const u32string &str, size_t startPos, size_t endPos, bool greedyMode) const
+    int DFAMatrix::Match(u32string::const_iterator strBegin, u32string::const_iterator strEnd, bool greedyMode) const
     {
-        if (endPos == u32string::npos)
-        {
-            endPos = str.size();
-        }
-        else if (endPos <= startPos)
-        {
-            return 0;
-        }
         if (matrix.size() > 0)
         {
             int state = 0;
-            int lastMatchedLength = -1;
-            size_t i = startPos;
-            while (i < endPos)
+            u32string::const_iterator lastMatchedPos = strBegin;
+            u32string::const_iterator i = strBegin;
+            while (i < strEnd)
             {
-                char32_t c = str.at(i);
+                char32_t c = *i;
                 bool matched = false;
                 if (IsEndState(state))
                 {
@@ -163,12 +155,12 @@ namespace regex
                     {
                         /* if in greedy mode, keep matching */
                         /* try to find the longest match */
-                        lastMatchedLength = i - startPos;
+                        lastMatchedPos = i;
                     }
                     else
                     {
                         /* if not in greedy mode, return the matched length */
-                        return i - startPos;
+                        return i - strBegin;
                     }
                 }
                 for (size_t j = 0; j < matrix.at(0).size(); j++)
@@ -177,7 +169,7 @@ namespace regex
                     {
                         /* can transit from the current state to the next state if pattern j is matched  */
                         auto pattern = patterns.GetPatternByID(static_cast<int>(j));
-                        matched = MatchPattern(state, pattern, c, i, j, startPos, endPos);
+                        matched = MatchPattern(state, pattern, c, i, j, strBegin, strEnd);
                         if (matched)
                         {
                             /* if found a viable transition, jump out of the searching loop. */
@@ -195,12 +187,12 @@ namespace regex
                     if (IsEndState(state))
                     {
                         /* if the current state is acceptable, return the current match. */
-                        return i - startPos;
+                        return i - strBegin;
                     }
                     else
                     {
                         /* if the current state is not acceptable, return the previous longest match */
-                        return lastMatchedLength - startPos;
+                        return lastMatchedPos - strBegin;
                     }
                 }
             }
@@ -208,22 +200,28 @@ namespace regex
             if (IsEndState(state))
             {
                 /* if the current state is acceptable, return the current match. */
-                return endPos - startPos;
+                return strEnd - strBegin;
             }
             else
             {
                 /* if the current state is not acceptable, return the previous longest match */
-                return lastMatchedLength - startPos;
+                return lastMatchedPos - strBegin;
             }
         }
         else
         {
-            return endPos - startPos;
+            return strEnd - strBegin;
         }
     }
 
-    bool DFAMatrix::MatchPattern(int &state, const UnicodeRange &pattern, char32_t c, size_t &i, size_t j,
-                                 size_t startPos, size_t endPos) const
+    bool DFAMatrix::MatchPattern(
+        int &state,
+        const UnicodeRange &pattern,
+        char32_t c,
+        u32string::const_iterator &i,
+        size_t j,
+        u32string::const_iterator strBegin,
+        u32string::const_iterator strEnd) const
     {
         if (pattern.rangeType == RangeType::CharacterRange)
         {
@@ -241,7 +239,7 @@ namespace regex
         }
         else if (pattern.rangeType == RangeType::LineBegin)
         {
-            if (i == startPos)
+            if (i == strBegin)
             {
                 // move to the next state
                 state = matrix.at(state).at(j);
@@ -254,7 +252,7 @@ namespace regex
         }
         else if (pattern.rangeType == RangeType::LineEnd)
         {
-            if (i + 1 == endPos)
+            if (i + 1 == strEnd)
             {
                 // move to the next state
                 state = matrix.at(state).at(j);

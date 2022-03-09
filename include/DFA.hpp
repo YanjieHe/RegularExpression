@@ -204,12 +204,12 @@ namespace regex
         explicit DFAMatrix(const DFA &dfaGraph);
 
         bool FullMatch(const u32string &str) const;
-        int Search(const u32string &str) const;
-        int Match(const u32string &str, size_t startPos, size_t endPos, bool greedyMode) const;
+        u32string::const_iterator Search(u32string::const_iterator strBegin, u32string::const_iterator strEnd) const;
+        int Match(u32string::const_iterator strBegin, u32string::const_iterator strEnd, bool greedyMode) const;
 
     private:
-        bool MatchPattern(int &state, const UnicodeRange &pattern, char32_t c, size_t &i, size_t j, size_t startPos,
-                          size_t endPos) const;
+        bool MatchPattern(int &state, const UnicodeRange &pattern, char32_t c, u32string::const_iterator &i, size_t j,
+                          u32string::const_iterator strBegin, u32string::const_iterator strEnd) const;
         bool IsEndState(int state) const;
     };
 

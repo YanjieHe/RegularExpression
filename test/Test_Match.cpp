@@ -83,15 +83,19 @@ TEST_CASE("Test Matching", "[DFAMatrix]")
         auto e = RepeatExactly(Range(U'0', U'9'), 3);
         auto matrix = e->Compile();
 
-        REQUIRE(matrix.Match(U"abc321", 3, 6, true) == 3);
-        REQUIRE(matrix.Match(U"abcefg321", 6, 9, true) == 3);
+        u32string s1 = U"abc321";
+        u32string s2 = U"abcdefg321";
+        REQUIRE(matrix.Match(s1.begin() + 3, s1.end(), true) == 3);
+        REQUIRE(matrix.Match(s2.begin() + 7, s2.end(), true) == 3);
     }
     SECTION("Test Matching a Word")
     {
         auto e = Literal(U"apple");
         auto matrix = e->Compile();
 
-        REQUIRE(matrix.Match(U"apple", 0, u32string::npos, true) == 5);
-        REQUIRE(matrix.Match(U"apple and banana", 0, u32string::npos, true) == 5);
+        u32string apple = U"apple";
+        u32string appleAndBanana = U"apple and banana";
+        REQUIRE(matrix.Match(apple.begin(), apple.end(), true) == 5);
+        REQUIRE(matrix.Match(appleAndBanana.begin(), appleAndBanana.end(), true) == 5);
     }
 }

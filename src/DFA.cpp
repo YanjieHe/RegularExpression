@@ -113,6 +113,12 @@ namespace regex
             }
         }
     }
+    /**
+     * DFAMatrix::FullMatch
+     * 
+     * @param  {u32string} str : check if the pattern can be applied to all of the string
+     * @return {bool}          : returns true if can
+     */
     bool DFAMatrix::FullMatch(const u32string &str) const
     {
         return Match(str.begin(), str.end(), true) == static_cast<int>(str.size());

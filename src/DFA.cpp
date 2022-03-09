@@ -145,7 +145,7 @@ namespace regex
      * @param  {u32string::const_iterator} strBegin : start of the target character range
      * @param  {u32string::const_iterator} strEnd   : end of the target character range
      * @param  {bool} greedyMode                    : If true, search for the longest match. Otherwise, return immediately once matched.
-     * @return {int}                                : the length of the matched string
+     * @return {int}                                : the length of the matched string. -1 if no match.
      */
     int DFAMatrix::Match(u32string::const_iterator strBegin, u32string::const_iterator strEnd, bool greedyMode) const
     {

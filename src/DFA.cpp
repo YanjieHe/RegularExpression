@@ -146,7 +146,7 @@ namespace regex
     /**
      * DFAMatrix::Match
      *
-     * Match the pattern from the beginning to the end.
+     * Match the pattern from the beginning.
      *
      * @param  {u32string::const_iterator} strBegin : start of the target character range
      * @param  {u32string::const_iterator} strEnd   : end of the target character range

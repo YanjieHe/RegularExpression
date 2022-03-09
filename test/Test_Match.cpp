@@ -48,6 +48,7 @@ TEST_CASE("Test Matching", "[DFAMatrix]")
         REQUIRE(matrix4.FullMatch(U"123ab") == false);
         REQUIRE(matrix4.FullMatch(U"aaa") == true);
         REQUIRE(matrix4.FullMatch(U"123") == true);
+        REQUIRE(matrix4.FullMatch(U"aa123") == false);
     }
     SECTION("Test RepeatExactly")
     {

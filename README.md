@@ -37,9 +37,36 @@ RegularExpression::Ptr Repeat(const RegularExpression::Ptr& x, int atLeast, int 
 After compiling the regular expressions to DFA matrices, you can use the member functions of DFA matrix to match string patterns.
 
 ```cpp
-bool DFAMatrix::FullMatch(const u32string& str) const;
-int DFAMatrix::Search(const u32string& str) const;
-int DFAMatrix::Match(const u32string& str, size_t startPos, size_t endPos, bool greedyMode) const;
+/**
+ * DFAMatrix::FullMatch
+ * 
+ * @param  {u32string} str : check if the pattern can be applied to all of the string
+ * @return {bool}          : returns true if can
+ */
+bool DFAMatrix::FullMatch(const u32string &str) const
+
+
+/**
+ * DFAMatrix::Search
+ *
+ * @param  {u32string::const_iterator} strBegin : start of the target character range
+ * @param  {u32string::const_iterator} strEnd   : end of the target character range
+ * @return {u32string::const_iterator}          : The start position of the first occurrence of the pattern. It equals to "strEnd" if the pattern is not found.
+ */
+u32string::const_iterator DFAMatrix::Search(u32string::const_iterator strBegin, u32string::const_iterator strEnd) const
+
+
+/**
+ * DFAMatrix::Match
+ *
+ * Match the pattern from the beginning.
+ *
+ * @param  {u32string::const_iterator} strBegin : start of the target character range
+ * @param  {u32string::const_iterator} strEnd   : end of the target character range
+ * @param  {bool} greedyMode                    : If true, search for the longest match. Otherwise, return immediately once matched.
+ * @return {int}                                : the length of the matched string. -1 if no match.
+ */
+int DFAMatrix::Match(u32string::const_iterator strBegin, u32string::const_iterator strEnd, bool greedyMode) const
 ```
 
 ## Examples

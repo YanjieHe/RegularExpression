@@ -52,7 +52,7 @@ namespace regex
         vector<DFATableRow> EpsilonClosure();
 
     private:
-        void CollectPatterns();
+        void NumberPatterns();
     };
     void ViewRow();
 

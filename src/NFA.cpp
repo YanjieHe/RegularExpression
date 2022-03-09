@@ -21,7 +21,7 @@ namespace regex
         auto subgraph = VisitRegularExpression(exp);
         this->startVertex = subgraph.start;
         this->endVertex = subgraph.end;
-        CollectPatterns();
+        NumberPatterns();
     }
     NFASubgraph NFA::VisitAlternation(const AlternationExpression::Ptr &exp)
     {
@@ -61,8 +61,12 @@ namespace regex
         G.AddEdge(Edge(start, end, pattern));
         return NFASubgraph(start, end);
     }
-
-    void NFA::CollectPatterns()
+    /**
+     * NFA::NumberPatterns
+     * 
+     * Give every pattern (Unicode range) a number as a unique identifier
+     */
+    void NFA::NumberPatterns()
     {
         patterns.Add(UnicodeRange::EPSILON, EPSILON);
         for (auto edge : G.GetEdges())
@@ -75,7 +79,7 @@ namespace regex
         }
     }
     /**
-     * NFA
+     * NFA::FindNextStates
      *
      * @param  {int} start            : start vertex id
      * @param  {int} vertex           : current vertex id

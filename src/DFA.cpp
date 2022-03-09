@@ -1,6 +1,7 @@
 #include "DFA.hpp"
 
 #include <stack>
+#include <stdexcept>
 
 namespace regex
 {
@@ -115,7 +116,7 @@ namespace regex
     }
     /**
      * DFAMatrix::FullMatch
-     * 
+     *
      * @param  {u32string} str : check if the pattern can be applied to all of the string
      * @return {bool}          : returns true if can
      */
@@ -244,7 +245,9 @@ namespace regex
         u32string::const_iterator strBegin,
         u32string::const_iterator strEnd) const
     {
-        if (pattern.rangeType == RangeType::CharacterRange)
+        switch (pattern.rangeType)
+        {
+        case RangeType::CharacterRange:
         {
             if (pattern.InBetween(c))
             {
@@ -258,7 +261,7 @@ namespace regex
                 return false;
             }
         }
-        else if (pattern.rangeType == RangeType::LineBegin)
+        case RangeType::LineBegin:
         {
             if (i == strBegin)
             {
@@ -271,7 +274,7 @@ namespace regex
                 return false;
             }
         }
-        else if (pattern.rangeType == RangeType::LineEnd)
+        case RangeType::LineEnd:
         {
             if (i + 1 == strEnd)
             {
@@ -284,9 +287,11 @@ namespace regex
                 return false;
             }
         }
-        else
+        default:
         {
-            return false;
+            /* all the epsilon edges have been eliminated */
+            throw std::runtime_error("unreachable case branch");
+        }
         }
     }
 

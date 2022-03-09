@@ -54,7 +54,5 @@ namespace regex
     private:
         void NumberPatterns();
     };
-    void ViewRow();
-
 } // namespace regex
 #endif // NFA_HPP

@@ -6,6 +6,7 @@
 
 using std::endl;
 using std::ofstream;
+using std::cout;
 using namespace regex::notations;
 
 Json REJsonSerializer::VisitAlternation(const AlternationExpression::Ptr &exp)
@@ -129,3 +130,28 @@ void DFAToDotFile(const DFA &dfa, string path)
     }
     out << "}" << endl;
 }
+
+void ViewDFATableRow(const DFATableRow &row, const UnicodePatterns &patterns)
+{
+    cout << "index { ";
+    for (auto item : row.index)
+    {
+        cout << item << " ";
+    }
+    cout << "} ";
+    for (size_t i = 0; i < row.nextStates.size(); i++)
+    {
+        auto state = row.nextStates.at(i);
+        cout << "STATE ";
+        auto pattern = patterns.GetPatternByID(i);
+        cout << utf8::utf32to8(pattern.ToString());
+        cout << " ";
+        cout << "{";
+        for (auto item : state)
+        {
+            cout << item << " ";
+        }
+        cout << "} ";
+    }
+    cout << endl;
+};

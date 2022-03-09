@@ -31,4 +31,6 @@ Json DFAToJson(const DFA &dfa);
 Json DFATableToJson(const vector<DFATableRow> &rows);
 
 void DFAToDotFile(const DFA &dfa, string path);
+
+void ViewDFATableRow(const DFATableRow &row, const UnicodePatterns &patterns);
 #endif // RE_JSON_SERIALIZER_HPP

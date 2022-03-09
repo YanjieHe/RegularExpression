@@ -208,30 +208,4 @@ namespace regex
         }
         return rows;
     }
-
-    void ViewRow(const DFATableRow &row, const UnicodePatterns &patterns)
-    {
-        cout << "index { ";
-        for (auto item : row.index)
-        {
-            cout << item << " ";
-        }
-        cout << "} ";
-        for (size_t i = 0; i < row.nextStates.size(); i++)
-        {
-            auto state = row.nextStates.at(i);
-            cout << "STATE ";
-            auto pattern = patterns.GetPatternByID(i);
-            cout << utf8::utf32to8(pattern.ToString());
-            cout << " ";
-            cout << "{";
-            for (auto item : state)
-            {
-                cout << item << " ";
-            }
-            cout << "} ";
-        }
-        cout << endl;
-    };
-
 } // namespace regex

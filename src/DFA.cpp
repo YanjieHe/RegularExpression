@@ -117,7 +117,13 @@ namespace regex
     {
         return Match(str.begin(), str.end(), true) == static_cast<int>(str.size());
     }
-
+    /**
+     * DFAMatrix::Search
+     *
+     * @param  {u32string::const_iterator} strBegin : start of the target character range
+     * @param  {u32string::const_iterator} strEnd   : end of the target character range
+     * @return {u32string::const_iterator}          : The start position of the first occurrence of the pattern. It equals to "strEnd" if the pattern is not found.
+     */
     u32string::const_iterator DFAMatrix::Search(u32string::const_iterator strBegin, u32string::const_iterator strEnd) const
     {
         if (matrix.size() > 0)
@@ -139,9 +145,9 @@ namespace regex
     }
     /**
      * DFAMatrix::Match
-     * 
+     *
      * Match the pattern from the beginning to the end.
-     * 
+     *
      * @param  {u32string::const_iterator} strBegin : start of the target character range
      * @param  {u32string::const_iterator} strEnd   : end of the target character range
      * @param  {bool} greedyMode                    : If true, search for the longest match. Otherwise, return immediately once matched.

@@ -152,7 +152,7 @@ namespace regex
         if (matrix.size() > 0)
         {
             int state = 0;
-            u32string::const_iterator lastMatchedPos = strBegin;
+            int lastMatchedLength = -1;
             u32string::const_iterator i = strBegin;
             while (i < strEnd)
             {
@@ -164,7 +164,7 @@ namespace regex
                     {
                         /* if in greedy mode, keep matching */
                         /* try to find the longest match */
-                        lastMatchedPos = i;
+                        lastMatchedLength = static_cast<int>(i - strBegin);
                     }
                     else
                     {
@@ -201,7 +201,7 @@ namespace regex
                     else
                     {
                         /* if the current state is not acceptable, return the previous longest match */
-                        return lastMatchedPos - strBegin;
+                        return lastMatchedLength;
                     }
                 }
             }
@@ -214,12 +214,12 @@ namespace regex
             else
             {
                 /* if the current state is not acceptable, return the previous longest match */
-                return lastMatchedPos - strBegin;
+                return lastMatchedLength;
             }
         }
         else
         {
-            return strEnd - strBegin;
+            return (-1);
         }
     }
 

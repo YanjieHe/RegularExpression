@@ -140,15 +140,19 @@ namespace regex
 
     int DFAMatrix::Match(const u32string &str, size_t startPos, size_t endPos, bool greedyMode) const
     {
+        if (endPos == u32string::npos)
+        {
+            endPos = str.size();
+        }
+        else if (endPos <= startPos)
+        {
+            return 0;
+        }
         if (matrix.size() > 0)
         {
             int state = 0;
             int lastMatchedLength = -1;
             size_t i = startPos;
-            if (endPos == u32string::npos)
-            {
-                endPos = str.size();
-            }
             while (i < endPos)
             {
                 char32_t c = str.at(i);
@@ -157,10 +161,13 @@ namespace regex
                 {
                     if (greedyMode)
                     {
+                        /* if in greedy mode, keep matching */
+                        /* try to find the longest match */
                         lastMatchedLength = i - startPos;
                     }
                     else
                     {
+                        /* if not in greedy mode, return the matched length */
                         return i - startPos;
                     }
                 }
@@ -168,38 +175,50 @@ namespace regex
                 {
                     if (matrix.at(state).at(j) != -1)
                     {
+                        /* can transit from the current state to the next state if pattern j is matched  */
                         auto pattern = patterns.GetPatternByID(static_cast<int>(j));
                         matched = MatchPattern(state, pattern, c, i, j, startPos, endPos);
                         if (matched)
                         {
+                            /* if found a viable transition, jump out of the searching loop. */
                             break;
+                        }
+                        else
+                        {
+                            /* keep searching the next possible transition */
                         }
                     }
                 }
                 if (!matched)
                 {
+                    /* if cannot match any pattern */
                     if (IsEndState(state))
                     {
+                        /* if the current state is acceptable, return the current match. */
                         return i - startPos;
                     }
                     else
                     {
+                        /* if the current state is not acceptable, return the previous longest match */
                         return lastMatchedLength - startPos;
                     }
                 }
             }
+            /* reaches to the end of the string */
             if (IsEndState(state))
             {
-                return str.size() - startPos;
+                /* if the current state is acceptable, return the current match. */
+                return endPos - startPos;
             }
             else
             {
+                /* if the current state is not acceptable, return the previous longest match */
                 return lastMatchedLength - startPos;
             }
         }
         else
         {
-            return str.size() - startPos;
+            return endPos - startPos;
         }
     }
 

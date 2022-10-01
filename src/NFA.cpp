@@ -1,7 +1,6 @@
 #include "NFA.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <stack>
 #include <unordered_set>
 #include <utfcpp/utf8/cpp11.h>
@@ -10,9 +9,6 @@
 
 namespace regex
 {
-
-    using std::cout;
-    using std::endl;
     using std::static_pointer_cast;
     using std::unordered_set;
 
